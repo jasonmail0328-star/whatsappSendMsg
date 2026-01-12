@@ -1,0 +1,36 @@
+2026-01-09 16:26:00 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-09 16:26:00 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-09 16:26:00 INFO whatsapp_manager Starting server on 127.0.0.1:8000
+2026-01-09 16:27:57 INFO whatsapp_manager ADD task s_20260109082757542400 starting, profile=E:\project\WhatsAppManager\accounts\acc_20260109082757
+2026-01-09 16:28:32 INFO whatsapp_manager detect_account_info_with_retries finished, result={'phone': None, 'jid': None, 'displayName': None}
+2026-01-09 16:28:32 INFO whatsapp_manager Upserted account acc_2a56a7e9094c profile=E:\project\WhatsAppManager\accounts\acc_20260109082757 phone=None
+2026-01-09 16:28:32 INFO whatsapp_manager ADD task s_20260109082757542400 registered account=acc_2a56a7e9094c phone=None profile=E:\project\WhatsAppManager\accounts\acc_20260109082757
+2026-01-09 16:28:32 INFO whatsapp_manager ADD done s_20260109082757542400 {'success': True, 'account_id': 'acc_2a56a7e9094c', 'phone': None, 'jid': None, 'profile_path': 'E:\\project\\WhatsAppManager\\accounts\\acc_20260109082757'}
+2026-01-09 16:29:07 INFO whatsapp_manager select_and_send_async start account=acc_2a56a7e9094c profile=E:\project\WhatsAppManager\accounts\acc_20260109082757 dry_run=True
+2026-01-09 16:29:07 INFO whatsapp_manager select_and_send_async start account=acc_85f88845c6db profile=E:\project\WhatsAppManager\accounts\acc_20260106072303 dry_run=True
+2026-01-09 16:29:18 INFO whatsapp_manager fetch_visible_contacts_async collected 10 contacts
+2026-01-09 16:29:18 INFO whatsapp_manager [send] account=acc_2a56a7e9094c fetched 10 contacts
+2026-01-09 16:29:18 INFO whatsapp_manager [send] account=acc_2a56a7e9094c chosen target: 1290 (namehash_a9e76f7f478c7be32c80f3bb0b7cc06e002d25bb)
+2026-01-09 16:29:23 INFO whatsapp_manager log_message account=acc_2a56a7e9094c contact_jid=namehash_a9e76f7f478c7be32c80f3bb0b7cc06e002d25bb result=simulated
+2026-01-09 16:29:23 INFO whatsapp_manager SEND done bulk_send_bulk_20260109082907575257_acc_2a56a7e9094c account=acc_2a56a7e9094c target={'name': '1290', 'jid': 'namehash_a9e76f7f478c7be32c80f3bb0b7cc06e002d25bb'}
+2026-01-09 16:29:23 INFO whatsapp_manager select_and_send_async start account=acc_885a0c674ef5 profile=E:\project\WhatsAppManager\accounts\acc_20260104090440 dry_run=True
+2026-01-09 16:29:32 INFO whatsapp_manager fetch_visible_contacts_async collected 67 contacts
+2026-01-09 16:29:32 INFO whatsapp_manager [send] account=acc_85f88845c6db fetched 67 contacts
+2026-01-09 16:29:32 INFO whatsapp_manager [send] account=acc_85f88845c6db chosen target: +256 768 878499 (namehash_4e8af647c054f3b5f0b59694ba1c78d8f22878e2)
+2026-01-09 16:29:37 INFO whatsapp_manager log_message account=acc_85f88845c6db contact_jid=namehash_4e8af647c054f3b5f0b59694ba1c78d8f22878e2 result=simulated
+2026-01-09 16:29:37 INFO whatsapp_manager SEND done bulk_send_bulk_20260109082907575257_acc_85f88845c6db account=acc_85f88845c6db target={'name': '+256 768 878499', 'jid': 'namehash_4e8af647c054f3b5f0b59694ba1c78d8f22878e2'}
+2026-01-09 16:29:45 INFO whatsapp_manager fetch_visible_contacts_async collected 68 contacts
+2026-01-09 16:29:45 INFO whatsapp_manager [send] account=acc_885a0c674ef5 fetched 68 contacts
+2026-01-09 16:29:45 INFO whatsapp_manager [send] account=acc_885a0c674ef5 chosen target: 南3241 (namehash_b6bbbd8552b625bf217ce3b261520fc8b9548787)
+2026-01-09 16:29:50 INFO whatsapp_manager log_message account=acc_885a0c674ef5 contact_jid=namehash_b6bbbd8552b625bf217ce3b261520fc8b9548787 result=simulated
+2026-01-09 16:29:50 INFO whatsapp_manager SEND done bulk_send_bulk_20260109082907575257_acc_885a0c674ef5 account=acc_885a0c674ef5 target={'name': '南3241', 'jid': 'namehash_b6bbbd8552b625bf217ce3b261520fc8b9548787'}
+2026-01-09 16:29:50 INFO whatsapp_manager BULK per_account done bulk_20260109082907575257
+2026-01-12 15:18:41 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-12 15:18:41 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-12 15:18:41 INFO whatsapp_manager Starting server on 127.0.0.1:8000
+2026-01-12 15:19:20 INFO whatsapp_manager select_and_send_async start account=acc_2a56a7e9094c profile=E:\project\WhatsAppManager\accounts\acc_20260109082757 dry_run=False
+2026-01-12 15:19:35 INFO whatsapp_manager fetch_visible_contacts_async collected 10 contacts
+2026-01-12 15:19:35 INFO whatsapp_manager [send] account=acc_2a56a7e9094c fetched 10 contacts
+2026-01-12 15:19:35 INFO whatsapp_manager [send] account=acc_2a56a7e9094c chosen target: 信7405优 A8 (namehash_d128fe8fcab26098961c70db816a082d2a30eca7)
+2026-01-12 15:19:43 INFO whatsapp_manager log_message account=acc_2a56a7e9094c contact_jid=namehash_d128fe8fcab26098961c70db816a082d2a30eca7 result=sent
+2026-01-12 15:19:43 INFO whatsapp_manager SEND done send_20260112071920648740 account=acc_2a56a7e9094c target={'name': '信7405优 A8', 'jid': 'namehash_d128fe8fcab26098961c70db816a082d2a30eca7'}

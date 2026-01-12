@@ -1,0 +1,37 @@
+2026/01/06-15:11:40.175 aed8 Reusing MANIFEST E:\project\WhatsAppManager\accounts\acc_20260104090440\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2026/01/06-15:11:40.176 aed8 Recovering log #218
+2026/01/06-15:11:40.181 aed8 Reusing old log E:\project\WhatsAppManager\accounts\acc_20260104090440\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000218.log 
+2026/01/06-15:11:41.880 a1b0 Level-0 table #227: started
+2026/01/06-15:11:41.883 a1b0 Level-0 table #227: 301707 bytes OK
+2026/01/06-15:11:41.884 a1b0 Delete type=0 #218
+2026/01/06-15:11:41.885 2cb4 Manual compaction at level-0 from '\x00'\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00(\x00\x00\x00' @ 0 : 0; will stop at (end)
+2026/01/06-15:11:41.915 aed8 Compacting 1@1 + 5@2 files
+2026/01/06-15:11:41.940 aed8 Generated table #228@1: 63670 keys, 2221326 bytes
+2026/01/06-15:11:41.969 aed8 Generated table #229@1: 44482 keys, 2215356 bytes
+2026/01/06-15:11:42.001 aed8 Generated table #230@1: 23475 keys, 2179813 bytes
+2026/01/06-15:11:42.023 aed8 Generated table #231@1: 26948 keys, 2194150 bytes
+2026/01/06-15:11:42.028 aed8 Generated table #232@1: 16495 keys, 360346 bytes
+2026/01/06-15:11:42.029 aed8 Compacted 1@1 + 5@2 files => 9170991 bytes
+2026/01/06-15:11:42.029 aed8 compacted to: files[ 0 0 5 0 0 0 0 ]
+2026/01/06-15:11:42.029 aed8 Delete type=2 #220
+2026/01/06-15:11:42.029 aed8 Delete type=2 #221
+2026/01/06-15:11:42.029 aed8 Delete type=2 #222
+2026/01/06-15:11:42.029 aed8 Delete type=2 #223
+2026/01/06-15:11:42.029 aed8 Delete type=2 #224
+2026/01/06-15:11:42.029 aed8 Delete type=2 #227
+2026/01/06-15:11:45.073 aed8 Level-0 table #234: started
+2026/01/06-15:11:45.081 aed8 Level-0 table #234: 1091111 bytes OK
+2026/01/06-15:11:45.082 aed8 Delete type=0 #226
+2026/01/06-15:11:45.082 aed8 Compacting 1@1 + 4@2 files
+2026/01/06-15:11:45.107 aed8 Generated table #235@1: 72017 keys, 2229928 bytes
+2026/01/06-15:11:45.128 aed8 Generated table #236@1: 33321 keys, 2198178 bytes
+2026/01/06-15:11:45.149 aed8 Generated table #237@1: 36269 keys, 2197634 bytes
+2026/01/06-15:11:45.165 aed8 Generated table #238@1: 22933 keys, 2191928 bytes
+2026/01/06-15:11:45.168 aed8 Generated table #239@1: 4624 keys, 418731 bytes
+2026/01/06-15:11:45.168 aed8 Compacted 1@1 + 4@2 files => 9236399 bytes
+2026/01/06-15:11:45.168 aed8 compacted to: files[ 0 0 6 0 0 0 0 ]
+2026/01/06-15:11:45.168 aed8 Delete type=2 #228
+2026/01/06-15:11:45.169 aed8 Delete type=2 #229
+2026/01/06-15:11:45.169 aed8 Delete type=2 #230
+2026/01/06-15:11:45.169 aed8 Delete type=2 #231
+2026/01/06-15:11:45.169 aed8 Delete type=2 #234

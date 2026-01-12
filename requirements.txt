@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+playwright
+pyperclip
+aiofiles
+aiohttp
+jinja2

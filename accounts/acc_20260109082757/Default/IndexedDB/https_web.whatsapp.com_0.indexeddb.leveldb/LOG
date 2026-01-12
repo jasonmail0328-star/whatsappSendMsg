@@ -1,0 +1,31 @@
+2026/01/12-15:19:21.688 69b8 Reusing MANIFEST E:\project\WhatsAppManager\accounts\acc_20260109082757\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2026/01/12-15:19:21.688 69b8 Recovering log #75
+2026/01/12-15:19:21.692 69b8 Reusing old log E:\project\WhatsAppManager\accounts\acc_20260109082757\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000075.log 
+2026/01/12-15:19:27.022 69b8 Level-0 table #81: started
+2026/01/12-15:19:27.023 69b8 Level-0 table #81: 160384 bytes OK
+2026/01/12-15:19:27.024 69b8 Delete type=0 #75
+2026/01/12-15:19:27.024 69b8 Manual compaction at level-0 from '\x00&\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00'\x00\x00\x00' @ 0 : 0; will stop at (end)
+2026/01/12-15:19:27.053 69a0 Compacting 1@1 + 1@2 files
+2026/01/12-15:19:27.062 69a0 Generated table #82@1: 18495 keys, 712508 bytes
+2026/01/12-15:19:27.062 69a0 Compacted 1@1 + 1@2 files => 712508 bytes
+2026/01/12-15:19:27.062 69a0 compacted to: files[ 0 0 1 0 0 0 0 ]
+2026/01/12-15:19:27.063 69a0 Delete type=2 #78
+2026/01/12-15:19:27.063 69a0 Delete type=2 #81
+2026/01/12-15:19:30.621 69a0 Level-0 table #84: started
+2026/01/12-15:19:30.629 69a0 Level-0 table #84: 1182206 bytes OK
+2026/01/12-15:19:30.629 69a0 Delete type=0 #80
+2026/01/12-15:19:30.633 69a0 Compacting 1@1 + 1@2 files
+2026/01/12-15:19:30.647 69a0 Generated table #85@1: 32001 keys, 1226425 bytes
+2026/01/12-15:19:30.647 69a0 Compacted 1@1 + 1@2 files => 1226425 bytes
+2026/01/12-15:19:30.648 69a0 compacted to: files[ 0 0 1 0 0 0 0 ]
+2026/01/12-15:19:34.386 69a0 Level-0 table #87: started
+2026/01/12-15:19:34.394 69a0 Level-0 table #87: 1183551 bytes OK
+2026/01/12-15:19:34.394 69a0 Delete type=2 #82
+2026/01/12-15:19:34.394 69a0 Delete type=0 #83
+2026/01/12-15:19:34.394 69a0 Delete type=2 #84
+2026/01/12-15:19:34.395 69a0 Compacting 1@1 + 1@2 files
+2026/01/12-15:19:34.414 69a0 Generated table #88@1: 35025 keys, 2004586 bytes
+2026/01/12-15:19:34.414 69a0 Compacted 1@1 + 1@2 files => 2004586 bytes
+2026/01/12-15:19:34.414 69a0 compacted to: files[ 0 0 1 0 0 0 0 ]
+2026/01/12-15:19:34.414 69a0 Delete type=2 #85
+2026/01/12-15:19:34.414 69a0 Delete type=2 #87
