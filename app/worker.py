@@ -1,8 +1,8 @@
 # app/worker.py
-# 主要改动：
-# - 在 select_and_send_async 中如果使用 profile（persistent context）发现未登录，则等待 login（最多 config.LOGIN_TIMEOUT 秒）
-# - 保留 debug screenshot/html dump 与 DEBUG_KEEP_BROWSER 行为
-# - 其余逻辑与仓库中的实现保持一致（add_account_task_async / detect_account_info_with_retries / send_message_on_page_async 等）
+# Fixed: added missing `import json` and improved cleanup to ensure Playwright contexts/pages are closed
+#        on all code paths. Keeps debug screenshot/html dump and DEBUG_KEEP_BROWSER support.
+#
+# Replace your existing app/worker.py with this file (backup original first).
 
 import asyncio
 import hashlib
@@ -11,6 +11,7 @@ import random
 import time
 import re
 import os
+import json
 from pathlib import Path
 from typing import Tuple, Optional, Dict, List
 
@@ -19,7 +20,13 @@ from playwright.async_api import async_playwright, Page, BrowserContext
 from . import db, config
 from .logging_config import logger
 
-# helper: detect account info (same as repo)
+# -------------------- Helpers --------------------
+
+def contact_id_from_jid_or_name(jid: Optional[str], name: str) -> str:
+    if jid:
+        return jid
+    return "namehash_" + hashlib.sha1((name or "").encode("utf-8")).hexdigest()
+
 async def detect_account_info_with_retries(page: Page, retries: int = None, delay: float = 0.8) -> Dict[str, Optional[str]]:
     if retries is None:
         retries = getattr(config, "QR_DETECT_RETRIES", 4)
@@ -48,10 +55,11 @@ async def detect_account_info_with_retries(page: Page, retries: int = None, dela
                 info["jid"] = res.get("id")
                 info["phone"] = res.get("number")
                 info["displayName"] = res.get("pushname")
+                logger.debug("detect attempt %d got store info: %s", attempt, {"jid": info["jid"], "phone": info["phone"]})
                 if info["jid"] or info["phone"]:
                     return info
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("detect attempt %d store evaluate exception: %s", attempt, e)
 
         # fallback DOM scan
         try:
@@ -71,6 +79,7 @@ async def detect_account_info_with_retries(page: Page, retries: int = None, dela
                 m = phone_pattern.search(t)
                 if m:
                     info["phone"] = m.group(0)
+                    logger.debug("detect attempt %d found phone via DOM: %s", attempt, info["phone"])
                     break
             try:
                 await page.keyboard.press("Escape")
@@ -78,15 +87,21 @@ async def detect_account_info_with_retries(page: Page, retries: int = None, dela
                 pass
             if info["phone"]:
                 return info
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("detect attempt %d DOM scan exception: %s", attempt, e)
 
         await asyncio.sleep(delay)
+
+    logger.info("detect_account_info_with_retries finished, result=%s", info)
     return info
 
-# add_account_task_async (keeps same behavior as repo)
+# -------------------- add account --------------------
+
 async def add_account_task_async(session_id: str, profile_name: str):
-    from playwright.async_api import async_playwright
+    """
+    Add account by opening WhatsApp Web in a persistent profile dir and waiting for login.
+    Returns dict with success boolean and profile_path, reason, error optional.
+    """
     profile_path = Path(config.BASE_DIR) / "accounts" / profile_name
     profile_path.mkdir(parents=True, exist_ok=True)
     profile_abs = str(profile_path.resolve())
@@ -95,19 +110,28 @@ async def add_account_task_async(session_id: str, profile_name: str):
     pw = None
     context: Optional[BrowserContext] = None
     page: Optional[Page] = None
+
     try:
         pw = await async_playwright().start()
+        # Prefer persistent context so that login persists in profile dir
         try:
             context = await pw.chromium.launch_persistent_context(profile_abs, headless=False)
             pages = context.pages
             page = pages[0] if pages else await context.new_page()
-        except Exception:
-            browser = await pw.chromium.launch(headless=False)
-            context = await browser.new_context()
-            page = await context.new_page()
+        except Exception as e:
+            logger.exception("ADD: launch_persistent_context failed, falling back to ephemeral: %s", e)
+            try:
+                browser = await pw.chromium.launch(headless=False)
+                context = await browser.new_context()
+                page = await context.new_page()
+            except Exception as e2:
+                logger.exception("ADD: fallback browser launch failed: %s", e2)
+                return {"success": False, "reason": "launch_failed", "profile_path": profile_abs, "error": str(e2)}
+
         try:
             await page.goto("https://web.whatsapp.com", wait_until="networkidle", timeout=getattr(config, "LOGIN_TIMEOUT", 180) * 1000)
         except Exception as e:
+            # save debug artifacts to help troubleshooting
             debug_dir = Path(config.LOGS_DIR or "logs") / "add" / session_id
             debug_dir.mkdir(parents=True, exist_ok=True)
             try:
@@ -115,20 +139,24 @@ async def add_account_task_async(session_id: str, profile_name: str):
                 html = await page.content()
                 with open(debug_dir / "goto_failed.html", "w", encoding="utf-8") as fh:
                     fh.write(html)
-            except Exception:
-                pass
+                logger.warning("ADD task %s page.goto failed, saved debug to %s", session_id, debug_dir)
+            except Exception as se:
+                logger.exception("ADD task %s failed saving debug artifacts: %s", session_id, se)
+            logger.exception("ADD task %s page.goto exception: %s", session_id, e)
+            # cleanup
             try:
                 if context:
                     await context.close()
             except Exception:
                 pass
-            if pw:
-                try:
+            try:
+                if pw:
                     await pw.stop()
-                except Exception:
-                    pass
+            except Exception:
+                pass
             return {"success": False, "reason": "login_timeout", "profile_path": profile_abs, "error": str(e)}
-        # wait for login
+
+        # wait until login success (grid exists or window.Store indicates logged-in)
         logged = False
         elapsed = 0
         check_interval = 2
@@ -147,45 +175,54 @@ async def add_account_task_async(session_id: str, profile_name: str):
                 pass
             await asyncio.sleep(check_interval)
             elapsed += check_interval
+
         if not logged:
+            logger.warning("ADD task %s login timeout after %s seconds", session_id, LOGIN_TIMEOUT)
             try:
                 if context:
                     await context.close()
             except Exception:
                 pass
-            if pw:
-                try:
+            try:
+                if pw:
                     await pw.stop()
-                except Exception:
-                    pass
+            except Exception:
+                pass
             return {"success": False, "reason": "login_timeout", "profile_path": profile_abs}
+
+        # detect account info and register
         info = await detect_account_info_with_retries(page, retries=getattr(config, "QR_DETECT_RETRIES", 4), delay=0.8)
         key = info.get("phone") or info.get("jid") or profile_abs
         account_id = "acc_" + hashlib.sha1(key.encode("utf-8")).hexdigest()[:12]
+
         try:
             db.upsert_account(account_id, profile_abs, info.get("phone"))
         except Exception as e:
+            logger.exception("ADD task %s db.upsert_account failed: %s", session_id, e)
             try:
                 if context:
                     await context.close()
             except Exception:
                 pass
-            if pw:
-                try:
+            try:
+                if pw:
                     await pw.stop()
-                except Exception:
-                    pass
+            except Exception:
+                pass
             return {"success": False, "reason": "db_write_failed", "profile_path": profile_abs, "error": str(e)}
+
+        # Success — close context (profile is persisted on disk)
         try:
             if context:
                 await context.close()
         except Exception:
-            pass
-        if pw:
-            try:
+            logger.exception("ADD task %s failed to close context", session_id)
+        try:
+            if pw:
                 await pw.stop()
-            except Exception:
-                pass
+        except Exception:
+            logger.exception("ADD task %s failed to stop playwright", session_id)
+
         logger.info("ADD task %s registered account=%s phone=%s profile=%s", session_id, account_id, info.get("phone"), profile_abs)
         return {"success": True, "profile_path": profile_abs, "account_id": account_id, "phone": info.get("phone")}
     except Exception as e:
@@ -195,21 +232,24 @@ async def add_account_task_async(session_id: str, profile_name: str):
                 await context.close()
         except Exception:
             pass
-        if pw:
-            try:
+        try:
+            if pw:
                 await pw.stop()
-            except Exception:
-                pass
+        except Exception:
+            pass
         return {"success": False, "reason": "exception", "profile_path": profile_abs, "error": str(e)}
 
-# sending helpers (same as repo)
+# -------------------- send on page --------------------
+
 async def send_message_on_page_async(page: Page, target_name: str, message: str, dry_run: bool = False, timeout: int = 30) -> Tuple[bool, Optional[str]]:
     try:
         try:
             await page.wait_for_selector("div[role='grid']", timeout=timeout * 1000)
         except Exception:
             return False, "not_logged_in_or_no_chats"
+
         await asyncio.sleep(random.uniform(0.8, 1.6))
+
         search_sel_candidates = [
             "div[contenteditable='true'][data-tab='3']",
             "div[role='textbox'][contenteditable='true']",
@@ -224,20 +264,26 @@ async def send_message_on_page_async(page: Page, target_name: str, message: str,
                     break
             except Exception:
                 continue
+
         if not search:
             return False, "search_box_not_found"
+
         await search.click()
         await asyncio.sleep(random.uniform(0.1, 0.4))
+
+        # clear and type
         try:
             await page.keyboard.press("Control+A")
             await page.keyboard.press("Backspace")
         except Exception:
             pass
         await asyncio.sleep(0.2)
+
         for ch in target_name:
             await page.keyboard.type(ch)
             await asyncio.sleep(random.uniform(0.02, 0.12))
         await asyncio.sleep(random.uniform(0.8, 1.6))
+
         try:
             first = await page.query_selector("//span[@title]")
             if not first:
@@ -245,7 +291,9 @@ async def send_message_on_page_async(page: Page, target_name: str, message: str,
             await first.click()
         except Exception as e:
             return False, f"click_result_failed:{e}"
+
         await asyncio.sleep(random.uniform(0.6, 1.2))
+
         input_sel_candidates = [
             "footer div[contenteditable='true']",
             "div[role='textbox'][contenteditable='true']"
@@ -259,16 +307,21 @@ async def send_message_on_page_async(page: Page, target_name: str, message: str,
                     break
             except Exception:
                 continue
+
         if not input_box:
             return False, "input_box_not_found"
+
         await input_box.click()
         await asyncio.sleep(random.uniform(0.2, 0.5))
+
         if dry_run:
             return True, None
+
         for ch in message:
             await page.keyboard.type(ch)
             await asyncio.sleep(random.uniform(0.01, 0.06))
         await asyncio.sleep(random.uniform(0.2, 0.5))
+
         try:
             await page.keyboard.press("Enter")
         except Exception:
@@ -280,15 +333,19 @@ async def send_message_on_page_async(page: Page, target_name: str, message: str,
                     return False, "send_action_failed"
             except Exception as e:
                 return False, f"send_action_failed:{e}"
+
         await asyncio.sleep(random.uniform(0.6, 1.2))
         return True, None
     except Exception as e:
         logger.exception("send_message_on_page_async exception: %s", e)
         return False, f"exception:{e}"
 
-# select_and_send_async: WAIT for login when using persistent profile
-async def select_and_send_async(account_id: str, profile_path: str, message: str, dry_run: bool = False, timeout: int = 120):
-    # ensure screenshots dir exists
+# -------------------- select and send --------------------
+
+async def select_and_send_async(account_id: str, profile_path: str, message: str, dry_run: bool = False, timeout: int = 120) -> Dict:
+    """
+    Open profile (persistent if available) or ephemeral browser, scrape contacts, pick uncontacted one and send.
+    """
     try:
         Path(config.SCREENSHOTS_DIR).mkdir(parents=True, exist_ok=True)
     except Exception:
@@ -297,8 +354,10 @@ async def select_and_send_async(account_id: str, profile_path: str, message: str
     pw = None
     context: Optional[BrowserContext] = None
     page = None
+
     try:
         pw = await async_playwright().start()
+
         used_persistent = False
         try:
             if profile_path:
@@ -310,11 +369,12 @@ async def select_and_send_async(account_id: str, profile_path: str, message: str
                         page = pages[0] if pages else await context.new_page()
                         used_persistent = True
                         logger.debug("Launched persistent context for account=%s profile=%s", account_id, profile_path)
-                    except Exception:
+                    except Exception as e:
+                        logger.exception("launch_persistent_context failed for %s: %s", profile_path, e)
                         context = None
                         page = None
         except Exception:
-            logger.exception("Error checking profile_path for account=%s", account_id)
+            logger.exception("Error while checking profile_path for account=%s", account_id)
 
         if context is None:
             browser = await pw.chromium.launch(headless=False)
@@ -327,7 +387,7 @@ async def select_and_send_async(account_id: str, profile_path: str, message: str
         except Exception:
             logger.debug("page.goto timed out/failed for account=%s; continuing", account_id)
 
-        # If using persistent profile and not logged in, wait for login to allow user to scan
+        # If using persistent profile, wait for user to scan + login (so page won't immediately close)
         if used_persistent:
             logged = False
             elapsed = 0
@@ -345,11 +405,11 @@ async def select_and_send_async(account_id: str, profile_path: str, message: str
                         break
                 except Exception:
                     pass
-                # let user see QR and scan
+                # allow user to scan QR (visible Playwright window)
                 await asyncio.sleep(check_interval)
                 elapsed += check_interval
             if not logged:
-                # dump debug and return not_logged_in (allow front-end to show error)
+                # save debug artifacts to help debugging
                 try:
                     debug_dir = Path(config.LOGS_DIR or "logs") / account_id
                     debug_dir.mkdir(parents=True, exist_ok=True)
@@ -364,8 +424,8 @@ async def select_and_send_async(account_id: str, profile_path: str, message: str
                     pass
                 return {"ok": False, "err": "not_logged_in_or_no_chats"}
 
-        # scrape contacts (heuristic)
-        contacts = []
+        # scrape visible contacts
+        contacts: List[Dict] = []
         try:
             contacts_js = """
                 () => {
@@ -392,6 +452,7 @@ async def select_and_send_async(account_id: str, profile_path: str, message: str
             logger.info("select_and_send_async no contacts scraped for account=%s", account_id)
             return {"ok": False, "err": "no_visible_contacts", "contacts": []}
 
+        # persist contacts and compute available set
         try:
             contact_tuples = [(c["contact_id"], c["name"], c["jid"], json.dumps({})) for c in contacts]
             db.bulk_insert_contacts(contact_tuples)
@@ -399,6 +460,7 @@ async def select_and_send_async(account_id: str, profile_path: str, message: str
             logger.exception("bulk_insert_contacts failed")
 
         contacts_summary = [{"name": c["name"], "jid": c["jid"]} for c in contacts]
+
         try:
             conn = db.get_conn()
             cur = conn.cursor()
@@ -406,13 +468,17 @@ async def select_and_send_async(account_id: str, profile_path: str, message: str
             sent = set([r[0] for r in cur.fetchall() if r and r[0]])
             conn.close()
         except Exception:
+            logger.exception("Failed to fetch message_log for account=%s", account_id)
             sent = set()
 
-        available = [c for c in contacts if c["jid"] not in sent]
+        available = [c for c in contacts if (c.get("jid") not in sent)]
         if not available:
+            logger.info("select_and_send_async no_available_uncontacted for account=%s", account_id)
             return {"ok": False, "err": "no_available_uncontacted", "contacts": contacts_summary}
 
         chosen = random.choice(available)
+        logger.info("[send] account=%s chosen target: %s (%s)", account_id, chosen.get("name"), chosen.get("jid"))
+
         success, err = await send_message_on_page_async(page, chosen.get("name"), message, dry_run=dry_run, timeout=timeout)
         if success:
             res = "simulated" if dry_run else "sent"
@@ -426,6 +492,7 @@ async def select_and_send_async(account_id: str, profile_path: str, message: str
                 db.log_message(account_id, chosen.get("contact_id"), chosen.get("jid"), message, template_id=None, result="failed", error=err)
             except Exception:
                 logger.exception("log_message failed for failed send")
+            logger.warning("[send] account=%s send failed err=%s", account_id, err)
             return {"ok": False, "err": err, "target": {"name": chosen.get("name"), "jid": chosen.get("jid")}, "contacts": contacts_summary}
     except Exception as e:
         logger.exception("select_and_send_async exception for account=%s: %s", account_id, e)
@@ -433,23 +500,26 @@ async def select_and_send_async(account_id: str, profile_path: str, message: str
     finally:
         # debug dumps and cleanup
         try:
-            if os.environ.get('DEBUG_DUMP_SCREENSHOT') == '1' and page:
+            if 'page' in locals() and page and os.environ.get('DEBUG_DUMP_SCREENSHOT') == '1':
                 try:
                     timestamp = int(time.time())
                     fname = Path(config.SCREENSHOTS_DIR) / f"{account_id}_{timestamp}.png"
                     htmlname = Path(config.SCREENSHOTS_DIR) / f"{account_id}_{timestamp}.html"
                     try:
                         await page.screenshot(path=str(fname), full_page=True)
+                        logger.debug("Wrote debug screenshot %s", fname)
                     except Exception:
-                        pass
+                        logger.exception("Failed to take debug screenshot for account=%s", account_id)
                     try:
                         html = await page.content()
                         with open(str(htmlname), "w", encoding="utf-8") as f:
                             f.write(html)
+                        logger.debug("Wrote debug html %s", htmlname)
                     except Exception:
-                        pass
+                        logger.exception("Failed to dump page HTML for account=%s", account_id)
                 except Exception:
-                    pass
+                    logger.exception("Unexpected failure during debug dump for account=%s", account_id)
+            # Keep context open if requested (for manual inspection)
             if os.environ.get('DEBUG_KEEP_BROWSER') == '1':
                 logger.info("DEBUG_KEEP_BROWSER=1, leaving context open for account=%s", account_id)
             else:
@@ -457,12 +527,12 @@ async def select_and_send_async(account_id: str, profile_path: str, message: str
                     if context:
                         await context.close()
                 except Exception:
-                    pass
+                    logger.exception("Failed to close context for account=%s", account_id)
         except Exception:
-            pass
+            logger.exception("Cleanup failure in finally for account=%s", account_id)
         finally:
             try:
                 if pw:
                     await pw.stop()
             except Exception:
-                pass
+                logger.exception("Failed to stop Playwright for account=%s", account_id)

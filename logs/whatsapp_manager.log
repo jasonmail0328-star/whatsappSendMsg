@@ -34,3 +34,269 @@
 2026-01-12 15:19:35 INFO whatsapp_manager [send] account=acc_2a56a7e9094c chosen target: 信7405优 A8 (namehash_d128fe8fcab26098961c70db816a082d2a30eca7)
 2026-01-12 15:19:43 INFO whatsapp_manager log_message account=acc_2a56a7e9094c contact_jid=namehash_d128fe8fcab26098961c70db816a082d2a30eca7 result=sent
 2026-01-12 15:19:43 INFO whatsapp_manager SEND done send_20260112071920648740 account=acc_2a56a7e9094c target={'name': '信7405优 A8', 'jid': 'namehash_d128fe8fcab26098961c70db816a082d2a30eca7'}
+2026-01-12 17:45:29 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-12 17:45:29 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-12 17:45:29 INFO whatsapp_manager Starting server on 127.0.0.1:8000
+2026-01-12 17:45:36 INFO whatsapp_manager delete_account acc_2a56a7e9094c remove_messages=True
+2026-01-12 17:45:37 INFO whatsapp_manager delete_account ok account=acc_2a56a7e9094c remove_profile=True remove_messages=True
+2026-01-12 17:45:42 INFO whatsapp_manager delete_account acc_85f88845c6db remove_messages=True
+2026-01-12 17:45:42 INFO whatsapp_manager delete_account ok account=acc_85f88845c6db remove_profile=True remove_messages=True
+2026-01-12 17:45:47 INFO whatsapp_manager delete_account acc_885a0c674ef5 remove_messages=True
+2026-01-12 17:45:47 INFO whatsapp_manager delete_account ok account=acc_885a0c674ef5 remove_profile=True remove_messages=True
+2026-01-12 17:46:12 INFO whatsapp_manager ADD task s_20260112094612929407 starting, profile=E:\project\WhatsAppManager\accounts\acc_20260112094612
+2026-01-12 17:46:59 INFO whatsapp_manager Upserted account acc_05ab1804623a profile=E:\project\WhatsAppManager\accounts\acc_20260112094612 phone=+2540726003686
+2026-01-12 17:47:00 INFO whatsapp_manager ADD task s_20260112094612929407 registered account=acc_05ab1804623a phone=+2540726003686 profile=E:\project\WhatsAppManager\accounts\acc_20260112094612
+2026-01-12 17:47:00 INFO whatsapp_manager ADD done s_20260112094612929407 {'success': True, 'account_id': 'acc_05ab1804623a', 'phone': '+2540726003686', 'jid': None, 'profile_path': 'E:\\project\\WhatsAppManager\\accounts\\acc_20260112094612'}
+2026-01-12 17:47:14 INFO whatsapp_manager ADD task s_20260112094714913017 starting, profile=E:\project\WhatsAppManager\accounts\acc_20260112094714
+2026-01-12 17:49:04 INFO whatsapp_manager detect_account_info_with_retries finished, result={'phone': None, 'jid': None, 'displayName': None}
+2026-01-12 17:49:04 INFO whatsapp_manager Upserted account acc_138fa5f3b802 profile=E:\project\WhatsAppManager\accounts\acc_20260112094714 phone=None
+2026-01-12 17:49:04 INFO whatsapp_manager ADD task s_20260112094714913017 registered account=acc_138fa5f3b802 phone=None profile=E:\project\WhatsAppManager\accounts\acc_20260112094714
+2026-01-12 17:49:04 INFO whatsapp_manager ADD done s_20260112094714913017 {'success': True, 'account_id': 'acc_138fa5f3b802', 'phone': None, 'jid': None, 'profile_path': 'E:\\project\\WhatsAppManager\\accounts\\acc_20260112094714'}
+2026-01-12 17:49:30 INFO whatsapp_manager ADD task s_20260112094930433999 starting, profile=E:\project\WhatsAppManager\accounts\acc_20260112094930
+2026-01-12 17:50:21 INFO whatsapp_manager Upserted account acc_85f88845c6db profile=E:\project\WhatsAppManager\accounts\acc_20260112094930 phone=567631
+2026-01-12 17:50:21 INFO whatsapp_manager ADD task s_20260112094930433999 registered account=acc_85f88845c6db phone=567631 profile=E:\project\WhatsAppManager\accounts\acc_20260112094930
+2026-01-12 17:50:21 INFO whatsapp_manager ADD done s_20260112094930433999 {'success': True, 'account_id': 'acc_85f88845c6db', 'phone': '567631', 'jid': None, 'profile_path': 'E:\\project\\WhatsAppManager\\accounts\\acc_20260112094930'}
+2026-01-12 17:53:40 INFO whatsapp_manager select_and_send_async start account=acc_85f88845c6db profile=E:\project\WhatsAppManager\accounts\acc_20260112094930 dry_run=False
+2026-01-12 17:53:49 ERROR whatsapp_manager select_and_send_async exception for account=acc_85f88845c6db: name 'fetch_visible_contacts_async' is not defined
+Traceback (most recent call last):
+  File "E:\project\WhatsAppManager\app\worker.py", line 284, in select_and_send_async
+    contacts = await fetch_visible_contacts_async(page, limit=500)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+NameError: name 'fetch_visible_contacts_async' is not defined
+2026-01-12 17:53:49 WARNING whatsapp_manager SEND failed send_20260112095340352041 account=acc_85f88845c6db err=exception
+2026-01-12 19:09:44 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-12 19:09:44 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-12 19:09:44 INFO whatsapp_manager Starting server on 127.0.0.1:8000
+2026-01-12 19:10:03 INFO whatsapp_manager select_and_send_async start account=acc_85f88845c6db profile=E:\project\WhatsAppManager\accounts\acc_20260112094930 dry_run=True
+2026-01-12 19:10:11 ERROR whatsapp_manager select_and_send_async exception for account=acc_85f88845c6db: name 'fetch_visible_contacts_async' is not defined
+Traceback (most recent call last):
+  File "E:\project\WhatsAppManager\app\worker.py", line 284, in select_and_send_async
+    contacts = await fetch_visible_contacts_async(page, limit=500)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+NameError: name 'fetch_visible_contacts_async' is not defined
+2026-01-12 19:10:11 WARNING whatsapp_manager SEND failed send_20260112111003627344 account=acc_85f88845c6db err=exception
+2026-01-12 19:19:47 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-12 19:19:47 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-12 19:19:47 INFO whatsapp_manager Starting server on 127.0.0.1:8000
+2026-01-12 19:20:34 ERROR whatsapp_manager SEND exception module 'app.worker' has no attribute 'select_and_send_async'
+Traceback (most recent call last):
+  File "E:\project\WhatsAppManager\app\tasks.py", line 66, in schedule_send_message
+    result = await worker.select_and_send_async(account_id, profile_path, message, dry_run=dry_run, timeout=120)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'app.worker' has no attribute 'select_and_send_async'
+2026-01-12 19:33:50 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-12 19:33:50 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-12 19:33:50 INFO whatsapp_manager Starting server on 127.0.0.1:8000
+2026-01-12 19:34:41 ERROR whatsapp_manager Failed to eval contacts on page for account=acc_85f88845c6db
+Traceback (most recent call last):
+  File "E:\project\WhatsAppManager\app\worker.py", line 184, in select_and_send_async
+    if isinstance := isinstance(c, list):
+                     ^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'isinstance' where it is not associated with a value
+2026-01-12 19:34:41 INFO whatsapp_manager select_and_send_async no contacts scraped for account=acc_85f88845c6db
+2026-01-12 19:34:41 INFO whatsapp_manager select_and_send_async no_available_uncontacted for account=acc_85f88845c6db
+2026-01-12 19:34:41 WARNING whatsapp_manager SEND failed send_20260112113428882949 account=acc_85f88845c6db err=no_available_uncontacted
+2026-01-12 19:35:02 ERROR whatsapp_manager Failed to eval contacts on page for account=acc_05ab1804623a
+Traceback (most recent call last):
+  File "E:\project\WhatsAppManager\app\worker.py", line 184, in select_and_send_async
+    if isinstance := isinstance(c, list):
+                     ^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'isinstance' where it is not associated with a value
+2026-01-12 19:35:02 INFO whatsapp_manager select_and_send_async no contacts scraped for account=acc_05ab1804623a
+2026-01-12 19:35:02 INFO whatsapp_manager select_and_send_async no_available_uncontacted for account=acc_05ab1804623a
+2026-01-12 19:35:02 WARNING whatsapp_manager SEND failed send_20260112113449463492 account=acc_05ab1804623a err=no_available_uncontacted
+2026-01-12 19:41:10 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-12 19:41:10 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-12 19:41:10 INFO whatsapp_manager Starting server on 127.0.0.1:8000
+2026-01-12 19:41:34 INFO whatsapp_manager select_and_send_async no contacts scraped for account=acc_85f88845c6db
+2026-01-12 19:41:34 INFO whatsapp_manager select_and_send_async no_available_uncontacted for account=acc_85f88845c6db
+2026-01-12 19:41:34 WARNING whatsapp_manager SEND failed send_20260112114122244818 account=acc_85f88845c6db err=no_available_uncontacted
+2026-01-12 19:41:55 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-12 19:41:55 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-12 19:41:55 INFO whatsapp_manager Starting server on 127.0.0.1:8000
+2026-01-12 19:42:16 INFO whatsapp_manager select_and_send_async no contacts scraped for account=acc_05ab1804623a
+2026-01-12 19:42:16 INFO whatsapp_manager select_and_send_async no_available_uncontacted for account=acc_05ab1804623a
+2026-01-12 19:42:16 WARNING whatsapp_manager SEND failed send_20260112114205851652 account=acc_05ab1804623a err=no_available_uncontacted
+2026-01-12 19:42:24 INFO whatsapp_manager delete_account acc_85f88845c6db remove_messages=True
+2026-01-12 19:42:24 INFO whatsapp_manager delete_account ok account=acc_85f88845c6db remove_profile=True remove_messages=True
+2026-01-12 19:42:29 INFO whatsapp_manager delete_account acc_138fa5f3b802 remove_messages=True
+2026-01-12 19:42:30 INFO whatsapp_manager delete_account ok account=acc_138fa5f3b802 remove_profile=True remove_messages=True
+2026-01-12 19:42:36 INFO whatsapp_manager delete_account acc_05ab1804623a remove_messages=True
+2026-01-12 19:42:36 INFO whatsapp_manager delete_account ok account=acc_05ab1804623a remove_profile=True remove_messages=True
+2026-01-12 19:42:40 ERROR whatsapp_manager ADD exception add_account_task_async should be implemented in the repository
+Traceback (most recent call last):
+  File "E:\project\WhatsAppManager\app\tasks.py", line 26, in schedule_add_account
+    res = await worker.add_account_task_async(session_id, profile_name)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\project\WhatsAppManager\app\worker.py", line 28, in add_account_task_async
+    raise NotImplementedError("add_account_task_async should be implemented in the repository")
+NotImplementedError: add_account_task_async should be implemented in the repository
+2026-01-12 19:42:56 ERROR whatsapp_manager ADD exception add_account_task_async should be implemented in the repository
+Traceback (most recent call last):
+  File "E:\project\WhatsAppManager\app\tasks.py", line 26, in schedule_add_account
+    res = await worker.add_account_task_async(session_id, profile_name)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\project\WhatsAppManager\app\worker.py", line 28, in add_account_task_async
+    raise NotImplementedError("add_account_task_async should be implemented in the repository")
+NotImplementedError: add_account_task_async should be implemented in the repository
+2026-01-12 19:51:06 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-12 19:51:06 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-12 19:51:06 INFO whatsapp_manager Starting server on 127.0.0.1:8000
+2026-01-12 19:51:10 ERROR whatsapp_manager ADD exception module 'app.worker' has no attribute 'add_account_task_async'
+Traceback (most recent call last):
+  File "E:\project\WhatsAppManager\app\tasks.py", line 28, in schedule_add_account
+    res = await worker.add_account_task_async(session_id, profile_name)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'app.worker' has no attribute 'add_account_task_async'
+2026-01-12 20:00:22 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-12 20:00:22 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-12 20:00:22 INFO whatsapp_manager Starting server on 127.0.0.1:8000
+2026-01-12 20:00:25 INFO whatsapp_manager ADD task s_20260112120025586988 starting, profile=E:\project\WhatsAppManager\accounts\acc_20260112120025
+2026-01-12 20:01:02 INFO whatsapp_manager Upserted account acc_85f88845c6db profile=E:\project\WhatsAppManager\accounts\acc_20260112120025 phone=567631
+2026-01-12 20:01:02 INFO whatsapp_manager ADD task s_20260112120025586988 registered account=acc_85f88845c6db phone=567631 profile=E:\project\WhatsAppManager\accounts\acc_20260112120025
+2026-01-12 20:01:02 INFO whatsapp_manager ADD done s_20260112120025586988 {'success': True, 'profile_path': 'E:\\project\\WhatsAppManager\\accounts\\acc_20260112120025', 'account_id': 'acc_85f88845c6db', 'phone': '567631'}
+2026-01-12 20:01:17 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-12 20:01:17 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-12 20:01:17 INFO whatsapp_manager Starting server on 127.0.0.1:8000
+2026-01-12 20:01:36 ERROR whatsapp_manager bulk_insert_contacts failed
+Traceback (most recent call last):
+  File "E:\project\WhatsAppManager\app\worker.py", line 396, in select_and_send_async
+    contact_tuples = [(c["contact_id"], c["name"], c["jid"], json.dumps({})) for c in contacts]
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\project\WhatsAppManager\app\worker.py", line 396, in <listcomp>
+    contact_tuples = [(c["contact_id"], c["name"], c["jid"], json.dumps({})) for c in contacts]
+                                                             ^^^^
+NameError: name 'json' is not defined
+2026-01-12 20:01:41 INFO whatsapp_manager log_message account=acc_85f88845c6db contact_jid=+234 916 615 8244 result=simulated
+2026-01-12 20:01:41 INFO whatsapp_manager SEND done send_20260112120127065227 account=acc_85f88845c6db target={'name': '+234 916 615 8244', 'jid': '+234 916 615 8244'}
+2026-01-12 20:01:56 ERROR whatsapp_manager bulk_insert_contacts failed
+Traceback (most recent call last):
+  File "E:\project\WhatsAppManager\app\worker.py", line 396, in select_and_send_async
+    contact_tuples = [(c["contact_id"], c["name"], c["jid"], json.dumps({})) for c in contacts]
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\project\WhatsAppManager\app\worker.py", line 396, in <listcomp>
+    contact_tuples = [(c["contact_id"], c["name"], c["jid"], json.dumps({})) for c in contacts]
+                                                             ^^^^
+NameError: name 'json' is not defined
+2026-01-12 20:02:03 INFO whatsapp_manager log_message account=acc_85f88845c6db contact_jid=转5783 result=sent
+2026-01-12 20:02:03 INFO whatsapp_manager SEND done send_20260112120148928917 account=acc_85f88845c6db target={'name': '转5783', 'jid': '转5783'}
+2026-01-12 20:02:45 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-12 20:02:46 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-12 20:02:46 INFO whatsapp_manager Starting server on 127.0.0.1:8000
+2026-01-12 20:03:12 ERROR whatsapp_manager bulk_insert_contacts failed
+Traceback (most recent call last):
+  File "E:\project\WhatsAppManager\app\worker.py", line 396, in select_and_send_async
+    contact_tuples = [(c["contact_id"], c["name"], c["jid"], json.dumps({})) for c in contacts]
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\project\WhatsAppManager\app\worker.py", line 396, in <listcomp>
+    contact_tuples = [(c["contact_id"], c["name"], c["jid"], json.dumps({})) for c in contacts]
+                                                             ^^^^
+NameError: name 'json' is not defined
+2026-01-12 20:03:21 INFO whatsapp_manager log_message account=acc_85f88845c6db contact_jid=+234 813 012 2569 result=sent
+2026-01-12 20:03:21 INFO whatsapp_manager SEND done bulk_20260112120304488898_acc_85f88845c6db account=acc_85f88845c6db target={'name': '+234 813 012 2569', 'jid': '+234 813 012 2569'}
+2026-01-12 20:03:30 INFO whatsapp_manager ADD task s_20260112120330921718 starting, profile=E:\project\WhatsAppManager\accounts\acc_20260112120330
+2026-01-12 20:04:23 INFO whatsapp_manager Upserted account acc_05ab1804623a profile=E:\project\WhatsAppManager\accounts\acc_20260112120330 phone=+2540726003686
+2026-01-12 20:04:23 INFO whatsapp_manager ADD task s_20260112120330921718 registered account=acc_05ab1804623a phone=+2540726003686 profile=E:\project\WhatsAppManager\accounts\acc_20260112120330
+2026-01-12 20:04:23 INFO whatsapp_manager ADD done s_20260112120330921718 {'success': True, 'profile_path': 'E:\\project\\WhatsAppManager\\accounts\\acc_20260112120330', 'account_id': 'acc_05ab1804623a', 'phone': '+2540726003686'}
+2026-01-12 20:04:28 INFO whatsapp_manager ADD task s_20260112120428218158 starting, profile=E:\project\WhatsAppManager\accounts\acc_20260112120428
+2026-01-12 20:06:20 WARNING whatsapp_manager ADD failed s_20260112120428218158 {'success': False, 'reason': 'login_timeout', 'profile_path': 'E:\\project\\WhatsAppManager\\accounts\\acc_20260112120428', 'error': 'Page.goto: Target page, context or browser has been closed\nCall log:\n  - navigating to "https://web.whatsapp.com/", waiting until "networkidle"\n'}
+2026-01-12 20:09:51 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-12 20:09:51 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-12 20:09:51 INFO whatsapp_manager Starting server on 127.0.0.1:8000
+2026-01-12 20:10:18 ERROR whatsapp_manager bulk_insert_contacts failed
+Traceback (most recent call last):
+  File "E:\project\WhatsAppManager\app\worker.py", line 396, in select_and_send_async
+    contact_tuples = [(c["contact_id"], c["name"], c["jid"], json.dumps({})) for c in contacts]
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\project\WhatsAppManager\app\worker.py", line 396, in <listcomp>
+    contact_tuples = [(c["contact_id"], c["name"], c["jid"], json.dumps({})) for c in contacts]
+                                                             ^^^^
+NameError: name 'json' is not defined
+2026-01-12 20:10:21 ERROR whatsapp_manager bulk_insert_contacts failed
+Traceback (most recent call last):
+  File "E:\project\WhatsAppManager\app\worker.py", line 396, in select_and_send_async
+    contact_tuples = [(c["contact_id"], c["name"], c["jid"], json.dumps({})) for c in contacts]
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\project\WhatsAppManager\app\worker.py", line 396, in <listcomp>
+    contact_tuples = [(c["contact_id"], c["name"], c["jid"], json.dumps({})) for c in contacts]
+                                                             ^^^^
+NameError: name 'json' is not defined
+2026-01-12 20:10:27 INFO whatsapp_manager log_message account=acc_85f88845c6db contact_jid=转0689 result=sent
+2026-01-12 20:10:27 INFO whatsapp_manager SEND done bulk_20260112121012255997_acc_85f88845c6db account=acc_85f88845c6db target={'name': '转0689', 'jid': '转0689'}
+2026-01-12 20:10:30 INFO whatsapp_manager log_message account=acc_05ab1804623a contact_jid=+254 799 874676 result=sent
+2026-01-12 20:10:30 INFO whatsapp_manager SEND done bulk_20260112121012255997_acc_05ab1804623a account=acc_05ab1804623a target={'name': '+254 799 874676', 'jid': '+254 799 874676'}
+2026-01-12 20:11:31 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-12 20:11:31 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-12 20:11:31 INFO whatsapp_manager Starting server on 127.0.0.1:8000
+2026-01-12 20:11:34 INFO whatsapp_manager ADD task s_20260112121134649590 starting, profile=E:\project\WhatsAppManager\accounts\acc_20260112121134
+2026-01-12 20:12:18 INFO whatsapp_manager detect_account_info_with_retries finished, result={'phone': None, 'jid': None, 'displayName': None}
+2026-01-12 20:12:18 INFO whatsapp_manager Upserted account acc_8aabef133ff6 profile=E:\project\WhatsAppManager\accounts\acc_20260112121134 phone=None
+2026-01-12 20:12:18 INFO whatsapp_manager ADD task s_20260112121134649590 registered account=acc_8aabef133ff6 phone=None profile=E:\project\WhatsAppManager\accounts\acc_20260112121134
+2026-01-12 20:12:18 INFO whatsapp_manager ADD done s_20260112121134649590 {'success': True, 'profile_path': 'E:\\project\\WhatsAppManager\\accounts\\acc_20260112121134', 'account_id': 'acc_8aabef133ff6', 'phone': None}
+2026-01-12 20:13:58 INFO whatsapp_manager [send] account=acc_05ab1804623a chosen target: +254 711 695212 (+254 711 695212)
+2026-01-12 20:14:02 INFO whatsapp_manager [send] account=acc_8aabef133ff6 chosen target: tk7566优-A9 (tk7566优-A9)
+2026-01-12 20:14:10 INFO whatsapp_manager log_message account=acc_05ab1804623a contact_jid=+254 711 695212 result=sent
+2026-01-12 20:14:10 INFO whatsapp_manager SEND done bulk_20260112121352452536_acc_05ab1804623a account=acc_05ab1804623a target={'name': '+254 711 695212', 'jid': '+254 711 695212'}
+2026-01-12 20:14:13 INFO whatsapp_manager log_message account=acc_8aabef133ff6 contact_jid=tk7566优-A9 result=sent
+2026-01-12 20:14:13 INFO whatsapp_manager SEND done bulk_20260112121352452536_acc_8aabef133ff6 account=acc_8aabef133ff6 target={'name': 'tk7566优-A9', 'jid': 'tk7566优-A9'}
+2026-01-12 20:14:19 INFO whatsapp_manager [send] account=acc_85f88845c6db chosen target: 信转0752x (信转0752x)
+2026-01-12 20:14:31 INFO whatsapp_manager log_message account=acc_85f88845c6db contact_jid=信转0752x result=sent
+2026-01-12 20:14:31 INFO whatsapp_manager SEND done bulk_20260112121352452536_acc_85f88845c6db account=acc_85f88845c6db target={'name': '信转0752x', 'jid': '信转0752x'}
+2026-01-12 20:16:48 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-12 20:16:48 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-12 20:16:48 INFO whatsapp_manager Starting server on 127.0.0.1:8000
+2026-01-12 20:17:07 INFO whatsapp_manager ADD task s_20260112121707951177 starting, profile=E:\project\WhatsAppManager\accounts\acc_20260112121707
+2026-01-12 20:17:12 ERROR whatsapp_manager ADD task s_20260112121707951177 failed saving debug artifacts: Page.screenshot: Target page, context or browser has been closed
+Traceback (most recent call last):
+  File "E:\project\WhatsAppManager\app\worker.py", line 138, in add_account_task_async
+    await page.screenshot(path=str(debug_dir / "goto_failed.png"), full_page=True)
+  File "E:\project\WhatsAppManager\.venv\Lib\site-packages\playwright\async_api\_generated.py", line 9788, in screenshot
+    await self._impl_obj.screenshot(
+  File "E:\project\WhatsAppManager\.venv\Lib\site-packages\playwright\_impl\_page.py", line 814, in screenshot
+    encoded_binary = await self._channel.send(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\project\WhatsAppManager\.venv\Lib\site-packages\playwright\_impl\_connection.py", line 69, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\project\WhatsAppManager\.venv\Lib\site-packages\playwright\_impl\_connection.py", line 559, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TargetClosedError: Page.screenshot: Target page, context or browser has been closed
+2026-01-12 20:17:12 ERROR whatsapp_manager ADD task s_20260112121707951177 page.goto exception: Page.goto: Target page, context or browser has been closed
+Call log:
+  - navigating to "https://web.whatsapp.com/", waiting until "networkidle"
+Traceback (most recent call last):
+  File "E:\project\WhatsAppManager\app\worker.py", line 132, in add_account_task_async
+    await page.goto("https://web.whatsapp.com", wait_until="networkidle", timeout=getattr(config, "LOGIN_TIMEOUT", 180) * 1000)
+  File "E:\project\WhatsAppManager\.venv\Lib\site-packages\playwright\async_api\_generated.py", line 9041, in goto
+    await self._impl_obj.goto(
+  File "E:\project\WhatsAppManager\.venv\Lib\site-packages\playwright\_impl\_page.py", line 552, in goto
+    return await self._main_frame.goto(**locals_to_params(locals()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\project\WhatsAppManager\.venv\Lib\site-packages\playwright\_impl\_frame.py", line 153, in goto
+    await self._channel.send(
+  File "E:\project\WhatsAppManager\.venv\Lib\site-packages\playwright\_impl\_connection.py", line 69, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\project\WhatsAppManager\.venv\Lib\site-packages\playwright\_impl\_connection.py", line 559, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TargetClosedError: Page.goto: Target page, context or browser has been closed
+Call log:
+  - navigating to "https://web.whatsapp.com/", waiting until "networkidle"
+
+2026-01-12 20:17:12 WARNING whatsapp_manager ADD failed s_20260112121707951177 {'success': False, 'reason': 'login_timeout', 'profile_path': 'E:\\project\\WhatsAppManager\\accounts\\acc_20260112121707', 'error': 'Page.goto: Target page, context or browser has been closed\nCall log:\n  - navigating to "https://web.whatsapp.com/", waiting until "networkidle"\n'}
+2026-01-12 20:17:57 INFO whatsapp_manager ADD task s_20260112121757262580 starting, profile=E:\project\WhatsAppManager\accounts\acc_20260112121757
+2026-01-12 20:18:56 INFO whatsapp_manager Upserted account acc_a6f14e9ac92b profile=E:\project\WhatsAppManager\accounts\acc_20260112121757 phone=304883
+2026-01-12 20:18:56 INFO whatsapp_manager ADD task s_20260112121757262580 registered account=acc_a6f14e9ac92b phone=304883 profile=E:\project\WhatsAppManager\accounts\acc_20260112121757
+2026-01-12 20:18:56 INFO whatsapp_manager ADD done s_20260112121757262580 {'success': True, 'profile_path': 'E:\\project\\WhatsAppManager\\accounts\\acc_20260112121757', 'account_id': 'acc_a6f14e9ac92b', 'phone': '304883'}
+2026-01-12 20:21:10 INFO whatsapp_manager [send] account=acc_a6f14e9ac92b chosen target: +254 799 357074 (+254 799 357074)
+2026-01-12 20:21:11 INFO whatsapp_manager [send] account=acc_8aabef133ff6 chosen target: 信转6091优—N21 (信转6091优—N21)
+2026-01-12 20:21:22 INFO whatsapp_manager log_message account=acc_a6f14e9ac92b contact_jid=+254 799 357074 result=sent
+2026-01-12 20:21:22 INFO whatsapp_manager SEND done bulk_20260112122102370044_acc_a6f14e9ac92b account=acc_a6f14e9ac92b target={'name': '+254 799 357074', 'jid': '+254 799 357074'}
+2026-01-12 20:21:22 INFO whatsapp_manager log_message account=acc_8aabef133ff6 contact_jid=信转6091优—N21 result=sent
+2026-01-12 20:21:22 INFO whatsapp_manager SEND done bulk_20260112122102370044_acc_8aabef133ff6 account=acc_8aabef133ff6 target={'name': '信转6091优—N21', 'jid': '信转6091优—N21'}
+2026-01-12 20:21:28 INFO whatsapp_manager [send] account=acc_05ab1804623a chosen target: +254 102 325928 (+254 102 325928)
+2026-01-12 20:21:29 INFO whatsapp_manager [send] account=acc_85f88845c6db chosen target: +1 (573) 680-8756 (+1 (573) 680-8756)
+2026-01-12 20:21:40 INFO whatsapp_manager log_message account=acc_85f88845c6db contact_jid=+1 (573) 680-8756 result=sent
+2026-01-12 20:21:40 INFO whatsapp_manager log_message account=acc_05ab1804623a contact_jid=+254 102 325928 result=sent
+2026-01-12 20:21:40 INFO whatsapp_manager SEND done bulk_20260112122102370044_acc_85f88845c6db account=acc_85f88845c6db target={'name': '+1 (573) 680-8756', 'jid': '+1 (573) 680-8756'}
+2026-01-12 20:21:40 INFO whatsapp_manager SEND done bulk_20260112122102370044_acc_05ab1804623a account=acc_05ab1804623a target={'name': '+254 102 325928', 'jid': '+254 102 325928'}
