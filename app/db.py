@@ -1,4 +1,4 @@
-# app/db.py
+# app/db.py (modified)
 import sqlite3
 from pathlib import Path
 from typing import Optional, List, Tuple
@@ -120,7 +120,33 @@ def is_account_in_use(account_id: str) -> bool:
     conn.close()
     return bool(row[0]) if row else False
 
-# Contacts and logs
+# New: atomic attempt to set in_use (returns True if we successfully locked it)
+def set_account_in_use_atomic(account_id: str) -> bool:
+    """
+    Atomically set in_use=1 only if it was 0. Returns True if successful, False if already in use.
+    """
+    conn = None
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute("BEGIN;")
+        cur.execute("UPDATE accounts SET in_use=1, updated_at=CURRENT_TIMESTAMP WHERE account_id=? AND in_use=0;", (account_id,))
+        changed = cur.rowcount
+        conn.commit()
+        conn.close()
+        logger.debug("Attempted atomic set_account_in_use %s -> changed=%s", account_id, changed)
+        return bool(changed)
+    except Exception as e:
+        logger.exception("set_account_in_use_atomic failed: %s", e)
+        try:
+            if conn:
+                conn.rollback()
+                conn.close()
+        except Exception:
+            pass
+        raise
+
+# Contacts and logs (unchanged)
 def upsert_contact(contact_id: str, name: str, jid: str, metadata: Optional[str] = None):
     try:
         conn = get_conn()
@@ -154,10 +180,6 @@ def log_message(account_id: str, contact_id: str, contact_jid: str, message: str
         raise
 
 def bulk_insert_contacts(contact_list):
-    """
-    contact_list: list of tuples (contact_id, name, jid, metadata_json)
-    使用事务进行批量插入/更新。
-    """
     if not contact_list:
         return
     try:
@@ -183,10 +205,6 @@ def bulk_insert_contacts(contact_list):
         raise
 
 def bulk_insert_messages(msg_list):
-    """
-    msg_list: list of tuples (account_id, contact_id, contact_jid, message, template_id, result, error)
-    使用事务批量写入 message_log。
-    """
     if not msg_list:
         return
     try:
@@ -220,7 +238,6 @@ def get_all_contact_jids() -> List[str]:
     conn.close()
     return rows
 
-# Templates
 def list_templates():
     conn = get_conn()
     cur = conn.cursor()
@@ -243,12 +260,7 @@ def delete_template(name: str):
     conn.commit()
     conn.close()
 
-# Deletion helpers
 def delete_account(account_id: str, remove_messages: bool = False):
-    """
-    删除 accounts 表中的账号（物理 profile 删除由调用者负责）。
-    如果 remove_messages=True，则同时删除 message_log 中该账号的记录。
-    """
     try:
         conn = get_conn()
         cur = conn.cursor()
@@ -263,9 +275,6 @@ def delete_account(account_id: str, remove_messages: bool = False):
         raise
 
 def update_account_usage(account_id: str, sent_inc: int = 0):
-    """
-    统一更新账号使用情况：today_sent 增量，更新 last_used_time。
-    """
     try:
         conn = get_conn()
         cur = conn.cursor()

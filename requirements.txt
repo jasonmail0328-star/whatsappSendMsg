@@ -1,7 +1,24 @@
+# Core runtime dependencies
 fastapi
-uvicorn
+uvicorn[standard]
 playwright
 pyperclip
 aiofiles
 aiohttp
 jinja2
+
+# Optional (desktop) - only needed if you use the desktop/window mode (run.py --desktop)
+pywebview
+
+# Dev / testing (optional)
+# pytest
+# black
+
+# Notes:
+# - After installing pip packages, you MUST run:
+#     python -m playwright install chromium
+#   to download Playwright browser binaries.
+# - On Linux, pyperclip may require xclip or xsel:
+#     sudo apt-get install -y xclip
+#   Or install a different clipboard backend if desired.
+# - Consider pinning versions for production (e.g. `package==1.2.3`) after verifying on your working machine.
