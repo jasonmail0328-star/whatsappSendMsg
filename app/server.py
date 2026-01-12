@@ -25,8 +25,15 @@ def create_app() -> FastAPI:
     async def add_account_endpoint():
         sid = "s_" + datetime.utcnow().strftime("%Y%m%d%H%M%S%f")
         profile_name = "acc_" + datetime.utcnow().strftime("%Y%m%d%H%M%S")
+        # mark queued immediately so frontend can poll
+        try:
+            tasks.ADD_TASKS[sid] = tasks.make_status_struct("queued")
+        except Exception:
+            # fallback minimal queued struct
+            tasks.ADD_TASKS[sid] = {"status": "queued", "result": {}, "error": "", "trace": ""}
         asyncio.create_task(tasks.schedule_add_account(profile_name, sid))
-        return JSONResponse(tasks.ADD_TASKS.get(sid) or {"status": "queued"})
+        # Return session_id so frontend will poll /add_status/<sid>
+        return JSONResponse({"status": "queued", "session_id": sid})
 
     @app.get("/add_status/{sid}")
     async def add_status(sid: str):
@@ -70,6 +77,10 @@ def create_app() -> FastAPI:
         if not message:
             return JSONResponse({"error": "message required"}, status_code=400)
         sid = "bulk_" + datetime.utcnow().strftime("%Y%m%d%H%M%S%f")
+        try:
+            tasks.BULK_TASKS[sid] = tasks.make_status_struct("queued", result={"requested_count": count, "results": []})
+        except Exception:
+            tasks.BULK_TASKS[sid] = {"status": "queued", "result": {"requested_count": count, "results": []}, "error": "", "trace": ""}
         asyncio.create_task(tasks.schedule_bulk_send(sid, count, per_account, message, dry_run))
         return JSONResponse({"status": "queued", "session_id": sid})
 
