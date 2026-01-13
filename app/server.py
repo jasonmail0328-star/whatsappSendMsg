@@ -3,6 +3,7 @@ import asyncio
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from . import db, tasks, ui
+from . import config
 from .config import ROOT_URL, HOST, PORT
 import uvicorn
 from datetime import datetime
@@ -25,14 +26,11 @@ def create_app() -> FastAPI:
     async def add_account_endpoint():
         sid = "s_" + datetime.utcnow().strftime("%Y%m%d%H%M%S%f")
         profile_name = "acc_" + datetime.utcnow().strftime("%Y%m%d%H%M%S")
-        # mark queued immediately so frontend can poll
         try:
             tasks.ADD_TASKS[sid] = tasks.make_status_struct("queued")
         except Exception:
-            # fallback minimal queued struct
             tasks.ADD_TASKS[sid] = {"status": "queued", "result": {}, "error": "", "trace": ""}
         asyncio.create_task(tasks.schedule_add_account(profile_name, sid))
-        # Return session_id so frontend will poll /add_status/<sid>
         return JSONResponse({"status": "queued", "session_id": sid})
 
     @app.get("/add_status/{sid}")
@@ -56,7 +54,6 @@ def create_app() -> FastAPI:
         if db.is_account_in_use(account_id):
             return JSONResponse({"error": "account is currently in use"}, status_code=409)
         sid = "send_" + datetime.utcnow().strftime("%Y%m%d%H%M%S%f")
-        # schedule
         asyncio.create_task(tasks.schedule_send_message(sid, account_id, profile_path, message, dry_run))
         return JSONResponse({"status": "queued", "session_id": sid})
 
@@ -74,6 +71,8 @@ def create_app() -> FastAPI:
         per_account = bool(payload.get("per_account"))
         message = payload.get("message")
         dry_run = bool(payload.get("dry_run"))
+        account_delay = float(payload.get("account_delay") or config.DEFAULT_ACCOUNT_INTERVAL)
+        round_delay = float(payload.get("round_delay") or config.DEFAULT_ROUND_INTERVAL)
         if not message:
             return JSONResponse({"error": "message required"}, status_code=400)
         sid = "bulk_" + datetime.utcnow().strftime("%Y%m%d%H%M%S%f")
@@ -81,7 +80,7 @@ def create_app() -> FastAPI:
             tasks.BULK_TASKS[sid] = tasks.make_status_struct("queued", result={"requested_count": count, "results": []})
         except Exception:
             tasks.BULK_TASKS[sid] = {"status": "queued", "result": {"requested_count": count, "results": []}, "error": "", "trace": ""}
-        asyncio.create_task(tasks.schedule_bulk_send(sid, count, per_account, message, dry_run))
+        asyncio.create_task(tasks.schedule_bulk_send(sid, count, per_account, message, dry_run, account_delay=account_delay, round_delay=round_delay))
         return JSONResponse({"status": "queued", "session_id": sid})
 
     @app.get("/bulk_status/{sid}")
@@ -122,6 +121,31 @@ def create_app() -> FastAPI:
     async def accounts_page():
         rows = db.list_accounts()
         return HTMLResponse(ui.render_accounts_page(rows))
+
+    # Settings endpoints: GET current settings, POST to save new ones
+    @app.get("/settings")
+    async def get_settings():
+        resp = {
+            "MAX_CONCURRENT_SENDS": config.MAX_CONCURRENT_SENDS,
+            "BULK_POLL_INTERVAL": config.BULK_POLL_INTERVAL,
+            "DEFAULT_ACCOUNT_INTERVAL": config.DEFAULT_ACCOUNT_INTERVAL,
+            "DEFAULT_ROUND_INTERVAL": config.DEFAULT_ROUND_INTERVAL,
+            "CHAR_DELAY_MIN": config.CHAR_DELAY_MIN,
+            "CHAR_DELAY_MAX": config.CHAR_DELAY_MAX
+        }
+        return JSONResponse(resp)
+
+    @app.post("/settings")
+    async def post_settings(req: Request):
+        payload = await req.json()
+        # Save via config.save_settings, which will persist file and reload config vars
+        saved = config.save_settings(payload)
+        # After saving config, reload runtime pieces (e.g., tasks semaphore)
+        try:
+            tasks.reload_config()
+        except Exception:
+            logger.exception("Failed to reload tasks config after settings update")
+        return JSONResponse({"ok": True, "saved": saved})
 
     return app
 

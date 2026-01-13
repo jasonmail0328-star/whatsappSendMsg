@@ -300,3 +300,70 @@ Call log:
 2026-01-12 20:21:40 INFO whatsapp_manager log_message account=acc_05ab1804623a contact_jid=+254 102 325928 result=sent
 2026-01-12 20:21:40 INFO whatsapp_manager SEND done bulk_20260112122102370044_acc_85f88845c6db account=acc_85f88845c6db target={'name': '+1 (573) 680-8756', 'jid': '+1 (573) 680-8756'}
 2026-01-12 20:21:40 INFO whatsapp_manager SEND done bulk_20260112122102370044_acc_05ab1804623a account=acc_05ab1804623a target={'name': '+254 102 325928', 'jid': '+254 102 325928'}
+2026-01-12 20:46:39 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-12 20:46:39 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-12 20:46:39 INFO whatsapp_manager Starting server on 127.0.0.1:8000
+2026-01-12 20:47:29 INFO whatsapp_manager Reloaded tasks config: MAX_CONCURRENT_SENDS=2
+2026-01-12 20:49:02 INFO whatsapp_manager [send] account=acc_a6f14e9ac92b chosen target: +254 757 304883 (+254 757 304883)
+2026-01-12 20:49:09 INFO whatsapp_manager log_message account=acc_a6f14e9ac92b contact_jid=+254 757 304883 result=sent
+2026-01-12 20:49:09 INFO whatsapp_manager SEND done bulk_20260112124852785907_0 account=acc_a6f14e9ac92b target={'name': '+254 757 304883', 'jid': '+254 757 304883'}
+2026-01-12 20:49:19 INFO whatsapp_manager [send] account=acc_8aabef133ff6 chosen target: 信7405优 A8 (信7405优 A8)
+2026-01-12 20:49:27 INFO whatsapp_manager log_message account=acc_8aabef133ff6 contact_jid=信7405优 A8 result=sent
+2026-01-12 20:49:27 INFO whatsapp_manager SEND done bulk_20260112124852785907_1 account=acc_8aabef133ff6 target={'name': '信7405优 A8', 'jid': '信7405优 A8'}
+2026-01-12 20:49:37 INFO whatsapp_manager [send] account=acc_05ab1804623a chosen target: 薪7562 (薪7562)
+2026-01-12 20:49:43 INFO whatsapp_manager log_message account=acc_05ab1804623a contact_jid=薪7562 result=sent
+2026-01-12 20:49:44 INFO whatsapp_manager SEND done bulk_20260112124852785907_2 account=acc_05ab1804623a target={'name': '薪7562', 'jid': '薪7562'}
+2026-01-12 20:49:55 INFO whatsapp_manager [send] account=acc_85f88845c6db chosen target: 转3618 (转3618)
+2026-01-12 20:50:02 INFO whatsapp_manager log_message account=acc_85f88845c6db contact_jid=转3618 result=sent
+2026-01-12 20:50:02 INFO whatsapp_manager SEND done bulk_20260112124852785907_3 account=acc_85f88845c6db target={'name': '转3618', 'jid': '转3618'}
+2026-01-12 20:51:00 INFO whatsapp_manager Reloaded tasks config: MAX_CONCURRENT_SENDS=2
+2026-01-13 18:57:34 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-13 18:57:34 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-13 18:57:34 INFO whatsapp_manager Starting server on 127.0.0.1:8000
+2026-01-13 18:57:41 INFO whatsapp_manager delete_account acc_a6f14e9ac92b remove_messages=True
+2026-01-13 18:57:41 INFO whatsapp_manager delete_account ok account=acc_a6f14e9ac92b remove_profile=True remove_messages=True
+2026-01-13 18:57:45 INFO whatsapp_manager delete_account acc_8aabef133ff6 remove_messages=True
+2026-01-13 18:57:45 INFO whatsapp_manager delete_account ok account=acc_8aabef133ff6 remove_profile=True remove_messages=True
+2026-01-13 18:57:50 INFO whatsapp_manager delete_account acc_05ab1804623a remove_messages=True
+2026-01-13 18:57:50 INFO whatsapp_manager delete_account ok account=acc_05ab1804623a remove_profile=True remove_messages=True
+2026-01-13 18:57:54 INFO whatsapp_manager delete_account acc_85f88845c6db remove_messages=True
+2026-01-13 18:57:54 INFO whatsapp_manager delete_account ok account=acc_85f88845c6db remove_profile=True remove_messages=True
+2026-01-13 18:57:59 INFO whatsapp_manager ADD task s_20260113105759430780 starting, profile=E:\project\WhatsAppManager\accounts\acc_20260113105759
+2026-01-13 18:58:01 ERROR whatsapp_manager ADD task s_20260113105759430780 failed saving debug artifacts: Page.screenshot: Target page, context or browser has been closed
+Traceback (most recent call last):
+  File "E:\project\WhatsAppManager\app\worker.py", line 149, in add_account_task_async
+    await page.screenshot(path=str(debug_dir / "goto_failed.png"), full_page=True)
+  File "E:\project\WhatsAppManager\.venv\Lib\site-packages\playwright\async_api\_generated.py", line 9788, in screenshot
+    await self._impl_obj.screenshot(
+  File "E:\project\WhatsAppManager\.venv\Lib\site-packages\playwright\_impl\_page.py", line 814, in screenshot
+    encoded_binary = await self._channel.send(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\project\WhatsAppManager\.venv\Lib\site-packages\playwright\_impl\_connection.py", line 69, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\project\WhatsAppManager\.venv\Lib\site-packages\playwright\_impl\_connection.py", line 559, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TargetClosedError: Page.screenshot: Target page, context or browser has been closed
+2026-01-13 18:58:01 ERROR whatsapp_manager ADD task s_20260113105759430780 page.goto exception: Page.goto: net::ERR_ABORTED; maybe frame was detached?
+Call log:
+  - navigating to "https://web.whatsapp.com/", waiting until "networkidle"
+Traceback (most recent call last):
+  File "E:\project\WhatsAppManager\app\worker.py", line 143, in add_account_task_async
+    await page.goto("https://web.whatsapp.com", wait_until="networkidle", timeout=int(getattr(config, "LOGIN_TIMEOUT", 180)) * 1000)
+  File "E:\project\WhatsAppManager\.venv\Lib\site-packages\playwright\async_api\_generated.py", line 9041, in goto
+    await self._impl_obj.goto(
+  File "E:\project\WhatsAppManager\.venv\Lib\site-packages\playwright\_impl\_page.py", line 552, in goto
+    return await self._main_frame.goto(**locals_to_params(locals()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\project\WhatsAppManager\.venv\Lib\site-packages\playwright\_impl\_frame.py", line 153, in goto
+    await self._channel.send(
+  File "E:\project\WhatsAppManager\.venv\Lib\site-packages\playwright\_impl\_connection.py", line 69, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\project\WhatsAppManager\.venv\Lib\site-packages\playwright\_impl\_connection.py", line 559, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: Page.goto: net::ERR_ABORTED; maybe frame was detached?
+Call log:
+  - navigating to "https://web.whatsapp.com/", waiting until "networkidle"
+
+2026-01-13 18:58:01 WARNING whatsapp_manager ADD failed s_20260113105759430780 {'success': False, 'reason': 'login_timeout', 'profile_path': 'E:\\project\\WhatsAppManager\\accounts\\acc_20260113105759', 'error': 'Page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n  - navigating to "https://web.whatsapp.com/", waiting until "networkidle"\n'}

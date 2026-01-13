@@ -1,6 +1,10 @@
 # app/ui.py
+# Fixed: avoid using f-strings for the large HTML template to prevent accidental interpolation
+# inside JavaScript template literals like `${sid}`. Use placeholder tokens and replace them
+# with configuration values at runtime to render the page.
+
 from typing import List, Tuple
-from . import db
+from . import db, config
 import html
 
 def esc(s):
@@ -20,7 +24,8 @@ def render_main_page(accounts_rows: List[Tuple]) -> str:
             esc(account_id), esc(phone or ""), esc(status), esc(today_sent or 0), esc(last_used or ""), esc(profile_path), disabled_attr, busy_label
         )
 
-    prefix = """
+    # Use placeholder tokens to avoid accidental f-string interpolation inside JS `${...}` sequences.
+    template = """
 <!doctype html>
 <html>
 <head>
@@ -36,6 +41,8 @@ def render_main_page(accounts_rows: List[Tuple]) -> str:
     #send_status{white-space:pre-wrap;background:#f9f9f9;padding:8px;border:1px solid #eee;margin-top:8px}
     #bulk_progress{height:18px;background:#eee;border:1px solid #ddd; width:100%; margin-top:8px}
     #bulk_progress_bar{height:100%; width:0%; background:linear-gradient(90deg,#4caf50,#81c784)}
+    .settings{background:#f6f6f6;padding:10px;border:1px solid #ddd;margin-top:12px}
+    label.inline{margin-right:12px}
   </style>
 </head>
 <body>
@@ -50,21 +57,43 @@ def render_main_page(accounts_rows: List[Tuple]) -> str:
   <textarea id="message_text" placeholder="在此输入要发送的消息"></textarea>
   <div><label><input type="checkbox" id="dry_run"> Dry-run（仅模拟）</label></div>
   <div style="margin-top:8px;"><label><input type="checkbox" id="auto_shutdown"> 关闭页面时自动关闭后台服务器</label></div>
+
+  <div class="settings">
+    <h4>发送 / 并发 设置（可保存并下次启动生效）</h4>
+    <div>
+      <label class="inline">并发控制 (MAX_CONCURRENT_SENDS): <input id="input_max_conc" type="number" min="1" value="__MAX_CONC__" style="width:80px"/></label>
+      <label class="inline">前端批量轮询间隔 (s): <input id="input_bulk_poll" type="number" step="0.1" value="__BULK_POLL__" style="width:80px"/></label>
+    </div>
+    <div style="margin-top:8px;">
+      <label class="inline">账号间隔（秒）:<input id="input_account_delay" type="number" step="0.1" value="__ACCOUNT_INTERVAL__" style="width:80px"/></label>
+      <label class="inline">轮次间隔（秒）:<input id="input_round_delay" type="number" step="0.1" value="__ROUND_INTERVAL__" style="width:80px"/></label>
+    </div>
+    <div style="margin-top:8px;">
+      <label class="inline">字符延迟最小 (s):<input id="input_char_min" type="number" step="0.01" value="__CHAR_MIN__" style="width:80px"/></label>
+      <label class="inline">字符延迟最大 (s):<input id="input_char_max" type="number" step="0.01" value="__CHAR_MAX__" style="width:80px"/></label>
+    </div>
+    <div style="margin-top:8px;">
+      <button id="btn-save-settings">保存设置</button>
+      <span id="save_status" style="margin-left:12px;color:green"></span>
+    </div>
+  </div>
+
   <hr/>
   <h3>单账号发送</h3>
   <table id="accounts_table">
     <thead><tr><th>account_id</th><th>phone</th><th>status</th><th>today_sent</th><th>last_used</th><th>profile_path</th><th>操作</th></tr></thead>
     <tbody>
-"""
-
-    bulk_and_suffix = """
+__ROWS_HTML__
     </tbody>
   </table>
+
   <hr/>
   <h3>批量发送</h3>
   <div>
     <label>发送总数（N）：<input type="number" id="bulk_count" value="5" min="1" style="width:80px"/></label>
     <label style="margin-left:12px"><input type="checkbox" id="per_account"> 每个账号各发送一条（忽略 N）</label>
+    <label class="inline">账号间隔（秒）:<input type="number" id="account_delay" value="__ACCOUNT_INTERVAL__" step="0.1" style="width:80px"/></label>
+    <label class="inline">轮次间隔（秒）:<input type="number" id="round_delay" value="__ROUND_INTERVAL__" step="0.1" style="width:80px"/></label>
     <button id="btn-bulk">开始批量发送</button>
   </div>
   <div id="bulk_progress"><div id="bulk_progress_bar"></div></div>
@@ -90,7 +119,9 @@ const API = {
   bulk: '/bulk_send',
   bulk_status: (sid)=>`/bulk_status/${sid}`,
   delete: '/delete_account',
-  accounts: '/accounts'
+  accounts: '/accounts',
+  settings_get: '/settings',
+  settings_save: '/settings'
 };
 
 function ajaxJson(url, opts={}) {
@@ -106,6 +137,25 @@ function showStatus(el, obj){
 
 document.getElementById('btn-init').addEventListener('click', ()=>{ location.href='/init'; });
 document.getElementById('btn-accounts').addEventListener('click', ()=>{ location.href='/accounts'; });
+
+// Save settings
+document.getElementById('btn-save-settings').addEventListener('click', async ()=>{
+  const payload = {
+    MAX_CONCURRENT_SENDS: parseInt(document.getElementById('input_max_conc').value || '2', 10),
+    BULK_POLL_INTERVAL: parseFloat(document.getElementById('input_bulk_poll').value || '1.5'),
+    DEFAULT_ACCOUNT_INTERVAL: parseFloat(document.getElementById('input_account_delay').value || '1.0'),
+    DEFAULT_ROUND_INTERVAL: parseFloat(document.getElementById('input_round_delay').value || '5.0'),
+    CHAR_DELAY_MIN: parseFloat(document.getElementById('input_char_min').value || '0.05'),
+    CHAR_DELAY_MAX: parseFloat(document.getElementById('input_char_max').value || '0.18')
+  };
+  try{
+    const res = await ajaxJson(API.settings_save, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+    document.getElementById('save_status').innerText = '已保存';
+    setTimeout(()=>{ document.getElementById('save_status').innerText='';}, 2000);
+  }catch(e){
+    alert('保存失败: '+e);
+  }
+});
 
 // Add-account logic with auto-refresh on registered
 document.getElementById('btn-add').addEventListener('click', async ()=>{
@@ -192,8 +242,10 @@ document.getElementById('btn-bulk').addEventListener('click', async ()=>{
   const per = document.getElementById('per_account').checked;
   const count = parseInt(document.getElementById('bulk_count').value || '0', 10);
   if(!per && (!count || count<=0)){ alert('请输入有效总数'); return; }
+  const account_delay = parseFloat(document.getElementById('account_delay').value || '1.0');
+  const round_delay = parseFloat(document.getElementById('round_delay').value || '5.0');
   try{
-    const res = await ajaxJson(API.bulk, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({count: count, per_account: per, message: msg, dry_run: dry})});
+    const res = await ajaxJson(API.bulk, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({count: count, per_account: per, message: msg, dry_run: dry, account_delay: account_delay, round_delay: round_delay})});
     const sid = res.session_id;
     document.getElementById('bulk_status').innerText = '批量任务已创建: ' + sid;
     let poll = setInterval(async ()=>{
@@ -214,7 +266,7 @@ document.getElementById('btn-bulk').addEventListener('click', async ()=>{
         console.error(e);
         clearInterval(poll);
       }
-    }, 1500);
+    }, Math.max(500, parseFloat(document.getElementById('input_bulk_poll').value || '1500') ));
   }catch(e){
     alert('请求失败: '+e);
   }
@@ -234,7 +286,16 @@ window.addEventListener('beforeunload', function (e) {
 </html>
 """
 
-    return prefix + rows_html + bulk_and_suffix
+    # Fill placeholders with current config values (convert to strings)
+    tpl = template.replace("__ROWS_HTML__", rows_html)
+    tpl = tpl.replace("__ACCOUNT_INTERVAL__", str(config.DEFAULT_ACCOUNT_INTERVAL))
+    tpl = tpl.replace("__ROUND_INTERVAL__", str(config.DEFAULT_ROUND_INTERVAL))
+    tpl = tpl.replace("__CHAR_MIN__", str(config.CHAR_DELAY_MIN))
+    tpl = tpl.replace("__CHAR_MAX__", str(config.CHAR_DELAY_MAX))
+    tpl = tpl.replace("__BULK_POLL__", str(config.BULK_POLL_INTERVAL))
+    tpl = tpl.replace("__MAX_CONC__", str(config.MAX_CONCURRENT_SENDS))
+
+    return tpl
 
 def render_accounts_page(rows: List[Tuple]) -> str:
     rows_html = ""
@@ -260,5 +321,7 @@ def render_accounts_page(rows: List[Tuple]) -> str:
 <html>
 <head><meta charset="utf-8"/><title>Accounts</title>
 <style>body{font-family:Arial}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:6px}th{background:#f2f2f2}</style>
-</head><body><h2>Accounts</h2><a href="/">返回</a><table><thead><tr><th>account_id</th><th>phone</th><th>status</th><th>today_sent</th><th>last_used</th><th>profile_path</th></tr></thead><tbody>""" + rows_html + "</tbody></table></body></html>"
+</head><body><h2>Accounts</h2><a href="/">返回</a><table><thead><tr><th>account_id</th><th>phone</th><th>status</th><th>today_sent</th><th>last_used</th><th>profile_path</th></tr></thead><tbody>"""
+    html_page += rows_html
+    html_page += "</tbody></table></body></html>"
     return html_page

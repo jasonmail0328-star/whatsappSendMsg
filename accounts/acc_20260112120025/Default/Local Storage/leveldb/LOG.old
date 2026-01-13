@@ -1,6 +1,0 @@
-2026/01/12-20:14:10.705 72f8 Reusing MANIFEST E:\project\WhatsAppManager\accounts\acc_20260112120025\Default\Local Storage\leveldb/MANIFEST-000001
-2026/01/12-20:14:10.708 72f8 Recovering log #3
-2026/01/12-20:14:10.709 72f8 Reusing old log E:\project\WhatsAppManager\accounts\acc_20260112120025\Default\Local Storage\leveldb/000003.log 
-2026/01/12-20:14:31.341 6860 Level-0 table #5: started
-2026/01/12-20:14:31.344 6860 Level-0 table #5: 18076 bytes OK
-2026/01/12-20:14:31.345 6860 Delete type=0 #3
