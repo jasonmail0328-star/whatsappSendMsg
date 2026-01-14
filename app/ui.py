@@ -1,327 +1,309 @@
 # app/ui.py
-# Fixed: avoid using f-strings for the large HTML template to prevent accidental interpolation
-# inside JavaScript template literals like `${sid}`. Use placeholder tokens and replace them
-# with configuration values at runtime to render the page.
+from html import escape
 
-from typing import List, Tuple
-from . import db, config
-import html
-
-def esc(s):
-    return html.escape(str(s) if s is not None else "")
-
-def render_main_page(accounts_rows: List[Tuple]) -> str:
-    rows_html = ""
-    for r in accounts_rows:
-        if len(r) >= 7:
-            account_id, profile_path, phone, status, today_sent, last_used, in_use = r
-        else:
-            account_id, profile_path, phone, status, today_sent, last_used = r
-            in_use = 0
-        disabled_attr = "disabled" if in_use else ""
-        busy_label = "（忙）" if in_use else ""
-        rows_html += "<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td>{5}</td><td><button class='send-btn' data-acc='{0}' {6}>发送{7}</button> <button class='del-btn' data-acc='{0}'>删除</button></td></tr>".format(
-            esc(account_id), esc(phone or ""), esc(status), esc(today_sent or 0), esc(last_used or ""), esc(profile_path), disabled_attr, busy_label
+def _render_accounts_table(rows):
+    out = []
+    out.append('<table id="accounts_table" border="1" cellpadding="6" style="border-collapse:collapse; width:100%;">')
+    out.append('<thead><tr><th>Account ID</th><th>Phone/Info</th><th>Profile Path</th><th>Actions</th></tr></thead>')
+    out.append('<tbody>')
+    for r in rows or []:
+        try:
+            acc = escape(str(r[0]))
+            prof = escape(str(r[1]) if len(r) > 1 else "")
+            phone = escape(str(r[2]) if len(r) > 2 and r[2] is not None else "")
+        except Exception:
+            acc = escape(str(r))
+            prof = ""
+            phone = ""
+        out.append(
+            '<tr>'
+            f'<td>{acc}</td>'
+            f'<td>{phone}</td>'
+            f'<td style="max-width:320px; overflow:hidden; text-overflow:ellipsis;">{prof}</td>'
+            '<td>'
+            f'<button class="send-btn" data-acc="{acc}">发送</button> '
+            f'<button class="del-btn" data-acc="{acc}">删除</button>'
+            '</td>'
+            '</tr>'
         )
+    out.append('</tbody></table>')
+    return "\n".join(out)
 
-    # Use placeholder tokens to avoid accidental f-string interpolation inside JS `${...}` sequences.
-    template = """
-<!doctype html>
+def render_main_page(rows):
+    accounts_table = _render_accounts_table(rows)
+
+    html_template = """<!doctype html>
 <html>
 <head>
-  <meta charset="utf-8"/>
-  <title>WhatsApp 多账号 管理器（Web）</title>
+  <meta charset="utf-8">
+  <title>WhatsApp Send Manager</title>
   <style>
-    body{font-family:Arial, Helvetica, sans-serif; margin:20px}
-    button{padding:6px 10px;margin:4px}
-    table{border-collapse:collapse;width:100%}
-    th,td{border:1px solid #ddd;padding:6px}
-    th{background:#f2f2f2}
-    textarea{width:100%;height:80px}
-    #send_status{white-space:pre-wrap;background:#f9f9f9;padding:8px;border:1px solid #eee;margin-top:8px}
-    #bulk_progress{height:18px;background:#eee;border:1px solid #ddd; width:100%; margin-top:8px}
-    #bulk_progress_bar{height:100%; width:0%; background:linear-gradient(90deg,#4caf50,#81c784)}
-    .settings{background:#f6f6f6;padding:10px;border:1px solid #ddd;margin-top:12px}
-    label.inline{margin-right:12px}
+    body { font-family: Arial, Helvetica, sans-serif; margin: 16px; }
+    textarea { width: 100%; height: 120px; }
+    .control-row { margin-bottom: 12px; }
+    #add_box, #bulk_status_box { margin-top: 8px; padding: 8px; border: 1px solid #ddd; display:none; background:#f9f9f9; }
+    pre.status { white-space: pre-wrap; word-break: break-word; max-height: 240px; overflow:auto; }
+    button[disabled] { opacity: 0.6; }
   </style>
 </head>
 <body>
-  <h2>WhatsApp 多账号 管理器（Web）</h2>
-  <div>
-    <button id="btn-init">初始化 DB</button>
+  <h2>WhatsApp Send Manager</h2>
+
+  <div class="control-row">
     <button id="btn-add">添加账号（扫码）</button>
-    <button id="btn-accounts">查看账号列表</button>
-  </div>
-  <hr/>
-  <h3>消息内容</h3>
-  <textarea id="message_text" placeholder="在此输入要发送的消息"></textarea>
-  <div><label><input type="checkbox" id="dry_run"> Dry-run（仅模拟）</label></div>
-  <div style="margin-top:8px;"><label><input type="checkbox" id="auto_shutdown"> 关闭页面时自动关闭后台服务器</label></div>
-
-  <div class="settings">
-    <h4>发送 / 并发 设置（可保存并下次启动生效）</h4>
-    <div>
-      <label class="inline">并发控制 (MAX_CONCURRENT_SENDS): <input id="input_max_conc" type="number" min="1" value="__MAX_CONC__" style="width:80px"/></label>
-      <label class="inline">前端批量轮询间隔 (s): <input id="input_bulk_poll" type="number" step="0.1" value="__BULK_POLL__" style="width:80px"/></label>
-    </div>
-    <div style="margin-top:8px;">
-      <label class="inline">账号间隔（秒）:<input id="input_account_delay" type="number" step="0.1" value="__ACCOUNT_INTERVAL__" style="width:80px"/></label>
-      <label class="inline">轮次间隔（秒）:<input id="input_round_delay" type="number" step="0.1" value="__ROUND_INTERVAL__" style="width:80px"/></label>
-    </div>
-    <div style="margin-top:8px;">
-      <label class="inline">字符延迟最小 (s):<input id="input_char_min" type="number" step="0.01" value="__CHAR_MIN__" style="width:80px"/></label>
-      <label class="inline">字符延迟最大 (s):<input id="input_char_max" type="number" step="0.01" value="__CHAR_MAX__" style="width:80px"/></label>
-    </div>
-    <div style="margin-top:8px;">
-      <button id="btn-save-settings">保存设置</button>
-      <span id="save_status" style="margin-left:12px;color:green"></span>
+    <div id="add_box">
+      <div>添加状态: <pre id="add_status" class="status"></pre></div>
     </div>
   </div>
 
-  <hr/>
-  <h3>单账号发送</h3>
-  <table id="accounts_table">
-    <thead><tr><th>account_id</th><th>phone</th><th>status</th><th>today_sent</th><th>last_used</th><th>profile_path</th><th>操作</th></tr></thead>
-    <tbody>
-__ROWS_HTML__
-    </tbody>
-  </table>
-
-  <hr/>
-  <h3>批量发送</h3>
+  <h3>账户列表</h3>
   <div>
-    <label>发送总数（N）：<input type="number" id="bulk_count" value="5" min="1" style="width:80px"/></label>
-    <label style="margin-left:12px"><input type="checkbox" id="per_account"> 每个账号各发送一条（忽略 N）</label>
-    <label class="inline">账号间隔（秒）:<input type="number" id="account_delay" value="__ACCOUNT_INTERVAL__" step="0.1" style="width:80px"/></label>
-    <label class="inline">轮次间隔（秒）:<input type="number" id="round_delay" value="__ROUND_INTERVAL__" step="0.1" style="width:80px"/></label>
-    <button id="btn-bulk">开始批量发送</button>
-  </div>
-  <div id="bulk_progress"><div id="bulk_progress_bar"></div></div>
-  <div id="bulk_status" style="margin-top:8px;background:#f6f6f6;padding:8px;border:1px solid #eee">无批量任务</div>
-  <hr/>
-  <div id="add_box" style="margin-top:20px;display:none">
-    <h3>添加账号进度</h3>
-    <div id="add_status">等待中...</div>
-    <div style="margin-top:8px"><button id="btn-stop-add">关闭</button></div>
+    __ACCOUNTS_TABLE__
   </div>
 
-  <div id="send_box" style="margin-top:20px">
-    <h3>发送任务状态</h3>
-    <div id="send_status">无任务</div>
+  <h3>发送消息</h3>
+  <div class="control-row">
+    <label>消息内容：</label><br/>
+    <textarea id="message_text" placeholder="在此输入要发送的消息"></textarea>
+  </div>
+  <div class="control-row">
+    <label><input type="checkbox" id="dry_run"> 仅模拟（Dry Run）</label>
+  </div>
+
+  <div class="control-row">
+    <button id="btn-bulk-send">开始批量发送</button>
+    <button id="btn-bulk-stop" style="display:none;">停止批量发送</button>
+  </div>
+
+  <div class="control-row">
+    <label>发送总�� / 轮数（当未勾选“每个账号各发送一条”时，count 表示轮数，每轮所有账号各发一条）: 
+      <input type="number" id="bulk_count" value="1" min="0" style="width:80px;">
+    </label>
+    &nbsp;&nbsp;
+    <label><input type="checkbox" id="per_account"> 每个账号各发送一条（忽略 count）</label>
+  </div>
+
+  <div id="bulk_status_box">
+    <div>批量任务状态: <pre id="bulk_status" class="status"></pre></div>
+  </div>
+
+  <div class="control-row">
+    <div>单账号发送状态: <pre id="send_status" class="status"></pre></div>
   </div>
 
 <script>
-const API = {
-  add: '/add',
-  add_status: (sid)=>`/add_status/${sid}`,
-  send: '/send',
-  send_status: (sid)=>`/send_status/${sid}`,
-  bulk: '/bulk_send',
-  bulk_status: (sid)=>`/bulk_status/${sid}`,
-  delete: '/delete_account',
-  accounts: '/accounts',
-  settings_get: '/settings',
-  settings_save: '/settings'
-};
+(function(){
+  async function ajaxJson(url, opts) {
+    const resp = await fetch(url, Object.assign({credentials: 'same-origin'}, opts || {}));
+    const ct = resp.headers.get('content-type') || '';
+    if (!resp.ok) {
+      let text = await resp.text().catch(()=> "");
+      let body = null;
+      try { body = JSON.parse(text); } catch(e) { body = text; }
+      const err = body && body.error ? body.error : resp.statusText || 'HTTP error';
+      throw new Error(err + (typeof body === 'string' ? (": "+body) : ""));
+    }
+    if (ct.indexOf('application/json') !== -1) {
+      return resp.json();
+    } else {
+      return resp.text();
+    }
+  }
 
-function ajaxJson(url, opts={}) {
-  return fetch(url, opts).then(r=>{
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    return r.json();
-  });
-}
-
-function showStatus(el, obj){
-  document.getElementById(el).innerText = JSON.stringify(obj, null, 2);
-}
-
-document.getElementById('btn-init').addEventListener('click', ()=>{ location.href='/init'; });
-document.getElementById('btn-accounts').addEventListener('click', ()=>{ location.href='/accounts'; });
-
-// Save settings
-document.getElementById('btn-save-settings').addEventListener('click', async ()=>{
-  const payload = {
-    MAX_CONCURRENT_SENDS: parseInt(document.getElementById('input_max_conc').value || '2', 10),
-    BULK_POLL_INTERVAL: parseFloat(document.getElementById('input_bulk_poll').value || '1.5'),
-    DEFAULT_ACCOUNT_INTERVAL: parseFloat(document.getElementById('input_account_delay').value || '1.0'),
-    DEFAULT_ROUND_INTERVAL: parseFloat(document.getElementById('input_round_delay').value || '5.0'),
-    CHAR_DELAY_MIN: parseFloat(document.getElementById('input_char_min').value || '0.05'),
-    CHAR_DELAY_MAX: parseFloat(document.getElementById('input_char_max').value || '0.18')
+  const API = {
+    add: '/add',
+    add_status: (sid) => '/add_status/' + encodeURIComponent(sid),
+    send: '/send',
+    send_status: (sid) => '/send_status/' + encodeURIComponent(sid),
+    bulk_send: '/bulk_send',
+    bulk_status: (sid) => '/bulk_status/' + encodeURIComponent(sid),
+    bulk_cancel: '/bulk_cancel'
   };
-  try{
-    const res = await ajaxJson(API.settings_save, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
-    document.getElementById('save_status').innerText = '已保存';
-    setTimeout(()=>{ document.getElementById('save_status').innerText='';}, 2000);
-  }catch(e){
-    alert('保存失败: '+e);
-  }
-});
 
-// Add-account logic with auto-refresh on registered
-document.getElementById('btn-add').addEventListener('click', async ()=>{
-  try{
-    const res = await ajaxJson(API.add, {method:'POST'});
-    const sid = res.session_id;
-    document.getElementById('add_box').style.display='block';
-    let poll = setInterval(async ()=>{
-      try{
-        const st = await ajaxJson(API.add_status(sid));
-        showStatus('add_status', st);
-        if(st.status === 'done' || st.status === 'failed' || st.status === 'error' || (st.status==='done' && st.result && st.result.success)){
-          clearInterval(poll);
-          setTimeout(()=>{ location.reload(); }, 700);
-        }
-        if(st.status === 'failed' || st.status==='error'){
-          clearInterval(poll);
-        }
-      }catch(e){
-        console.error(e);
-        clearInterval(poll);
-      }
-    }, 1000);
-    document.getElementById('btn-stop-add').onclick = ()=>{ clearInterval(poll); document.getElementById('add_box').style.display='none'; };
-  }catch(e){
-    alert('请求失败: '+e);
-  }
-});
-
-// Delegate send & delete buttons
-document.getElementById('accounts_table').addEventListener('click', async (ev)=>{
-  const btn = ev.target;
-  if(btn.classList.contains('send-btn')){
-    const acc = btn.dataset.acc;
-    const msg = document.getElementById('message_text').value;
-    if(!msg || !msg.trim()){ alert('请输入要发送的消息'); return; }
-    const dry = document.getElementById('dry_run').checked;
-    btn.disabled = true;
-    try{
-      const res = await ajaxJson(API.send, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({account_id: acc, message: msg, dry_run: dry})});
-      if(res.session_id){
-        document.getElementById('send_status').innerText = '任务已创建: ' + res.session_id;
-        let sid = res.session_id;
-        let spoll = setInterval(async ()=>{
-          try{
-            const st = await ajaxJson(API.send_status(sid));
-            showStatus('send_status', st);
-            if(['done','failed','error','rejected'].includes(st.status)){
-              clearInterval(spoll);
-              btn.disabled = false;
-              location.reload();
+  const btnAdd = document.getElementById('btn-add');
+  if (btnAdd) {
+    btnAdd.addEventListener('click', async function(){
+      const btn = this;
+      if (btn.disabled) return;
+      btn.disabled = true;
+      try {
+        const res = await ajaxJson(API.add, { method: 'POST' });
+        if (res && res.session_id) {
+          document.getElementById('add_box').style.display = 'block';
+          document.getElementById('add_status').innerText = '排队中... session=' + res.session_id;
+          const poll = setInterval(async function(){
+            try {
+              const s = await ajaxJson(API.add_status(res.session_id));
+              document.getElementById('add_status').innerText = JSON.stringify(s, null, 2);
+              if (s && (s.status === 'done' || s.status === 'failed' || s.status === 'error')) {
+                clearInterval(poll);
+                document.getElementById('add_box').style.display = 'none';
+                location.reload();
+              }
+            } catch(e) {
+              console.error('add poll fail', e);
             }
-          }catch(e){
-            console.error(e);
-            clearInterval(spoll);
-            btn.disabled = false;
-          }
-        }, 1000);
-      } else {
-        alert('创建任务失败: '+JSON.stringify(res));
+          }, 1000);
+        } else {
+          alert('启动添加账号失败');
+          btn.disabled = false;
+        }
+      } catch(e) {
+        console.error('add failed', e);
+        alert('启动添加失败: ' + e);
         btn.disabled = false;
       }
-    }catch(e){
-      alert('请求失败: '+e);
-      btn.disabled = false;
-    }
-  } else if(btn.classList.contains('del-btn')){
-    const acc = btn.dataset.acc;
-    if(!confirm('确认删除账号 '+acc+' ?')) return;
-    const delProfile = confirm('同时删除 profile 目录？');
-    const delMsgs = confirm('同时删除发送记录？');
-    try{
-      const res = await ajaxJson(API.delete, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({account_id: acc, remove_profile: delProfile, remove_messages: delMsgs})});
-      if(res.ok){ alert('已删除'); location.reload(); } else { alert('删除失败: '+JSON.stringify(res)); }
-    }catch(e){ alert('请求失败: '+e); }
+    });
   }
-});
 
-// Bulk
-document.getElementById('btn-bulk').addEventListener('click', async ()=>{
-  const msg = document.getElementById('message_text').value;
-  if(!msg || !msg.trim()){ alert('请输入要发送的消息'); return; }
-  const dry = document.getElementById('dry_run').checked;
-  const per = document.getElementById('per_account').checked;
-  const count = parseInt(document.getElementById('bulk_count').value || '0', 10);
-  if(!per && (!count || count<=0)){ alert('请输入有效总数'); return; }
-  const account_delay = parseFloat(document.getElementById('account_delay').value || '1.0');
-  const round_delay = parseFloat(document.getElementById('round_delay').value || '5.0');
-  try{
-    const res = await ajaxJson(API.bulk, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({count: count, per_account: per, message: msg, dry_run: dry, account_delay: account_delay, round_delay: round_delay})});
-    const sid = res.session_id;
-    document.getElementById('bulk_status').innerText = '批量任务已创建: ' + sid;
-    let poll = setInterval(async ()=>{
-      try{
-        const st = await ajaxJson(API.bulk_status(sid));
-        showStatus('bulk_status', st);
-        if(st.result && st.result.results){
-          const total = per ? st.result.results.length : (st.result.requested_count || 0);
-          const done = st.result.results.filter(r => r.result && r.result.ok).length;
-          const perc = total>0 ? Math.min(100, Math.round((done/Math.max(1,total))*100)) : 0;
-          document.getElementById('bulk_progress_bar').style.width = perc + '%';
+  let BULK_POLL_TIMER = null;
+  let CURRENT_BULK_SID = null;
+
+  function startBulkPolling(sid) {
+    CURRENT_BULK_SID = sid;
+    document.getElementById('bulk_status_box').style.display = 'block';
+    document.getElementById('btn-bulk-stop').style.display = 'inline';
+    const interval = 1500;
+    BULK_POLL_TIMER = setInterval(async function(){
+      try {
+        const s = await ajaxJson(API.bulk_status(sid));
+        document.getElementById('bulk_status').innerText = JSON.stringify(s, null, 2);
+        if (s && (s.status === 'done' || s.status === 'failed' || s.status === 'partial' || s.status === 'cancelled' || s.status === 'error')) {
+          stopBulkPolling();
+          document.getElementById('btn-bulk-send').disabled = false;
         }
-        if(['done','failed','error','rejected'].includes(st.status)){
-          clearInterval(poll);
-          setTimeout(()=>{ location.reload(); }, 700);
-        }
-      }catch(e){
-        console.error(e);
-        clearInterval(poll);
+      } catch(e) {
+        console.error('bulk status poll failed', e);
       }
-    }, Math.max(500, parseFloat(document.getElementById('input_bulk_poll').value || '1500') ));
-  }catch(e){
-    alert('请求失败: '+e);
+    }, interval);
   }
-});
 
-// auto shutdown
-window.addEventListener('beforeunload', function (e) {
-  try {
-    var auto = document.getElementById('auto_shutdown').checked;
-    if(auto){
-      navigator.sendBeacon('/shutdown', '');
+  function stopBulkPolling() {
+    if (BULK_POLL_TIMER) {
+      clearInterval(BULK_POLL_TIMER);
+      BULK_POLL_TIMER = null;
     }
-  } catch (err) {}
-});
+    CURRENT_BULK_SID = null;
+    document.getElementById('btn-bulk-stop').style.display = 'none';
+    const b = document.getElementById('btn-bulk-send');
+    if (b) b.disabled = false;
+  }
+
+  const btnBulk = document.getElementById('btn-bulk-send');
+  if (btnBulk) {
+    btnBulk.addEventListener('click', async function(){
+      const btn = this;
+      if (btn.disabled) return;
+      const count = parseInt(document.getElementById('bulk_count').value || '0', 10);
+      const per_account = document.getElementById('per_account').checked;
+      const message = document.getElementById('message_text').value;
+      const dry = document.getElementById('dry_run').checked;
+      if (!message || !message.trim()) { return alert('请输入要发送的消息'); }
+      btn.disabled = true;
+      try {
+        const resp = await ajaxJson(API.bulk_send, { method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ count: count, per_account: per_account, message: message, dry_run: dry })
+        });
+        if (resp && resp.session_id) {
+          document.getElementById('bulk_status_box').style.display = 'block';
+          document.getElementById('bulk_status').innerText = '已排队, session=' + resp.session_id;
+          startBulkPolling(resp.session_id);
+        } else {
+          alert('无法启动批量发送任务');
+          btn.disabled = false;
+        }
+      } catch(e) {
+        console.error('bulk_send failed', e);
+        alert('批量发送请求失败: ' + e);
+        btn.disabled = false;
+      }
+    });
+  }
+
+  const btnBulkStop = document.getElementById('btn-bulk-stop');
+  if (btnBulkStop) {
+    btnBulkStop.addEventListener('click', async function(){
+      const sid = CURRENT_BULK_SID;
+      if (!sid) return;
+      try {
+        await ajaxJson(API.bulk_cancel, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ session_id: sid }) });
+        stopBulkPolling();
+      } catch(e) {
+        console.error('bulk_cancel failed', e);
+        alert('取消失败: ' + e);
+      }
+    });
+  }
+
+  const accountsTable = document.getElementById('accounts_table');
+  if (accountsTable) {
+    accountsTable.addEventListener('click', async function(ev){
+      const btn = ev.target;
+      if (btn.classList.contains('send-btn')) {
+        const acc = btn.getAttribute('data-acc');
+        const msg = document.getElementById('message_text').value;
+        if (!msg || !msg.trim()) { return alert('请输入要发送的消息'); }
+        const dry = document.getElementById('dry_run').checked;
+        try {
+          const resp = await ajaxJson(API.send, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ account_id: acc, message: msg, dry_run: dry }) });
+          if (resp && resp.session_id) {
+            document.getElementById('send_status').innerText = '已排队, session=' + resp.session_id;
+            const poll = setInterval(async function(){
+              try {
+                const s = await ajaxJson(API.send_status(resp.session_id));
+                document.getElementById('send_status').innerText = JSON.stringify(s, null, 2);
+                if (s && (s.status === 'done' || s.status === 'failed' || s.status === 'error')) {
+                  clearInterval(poll);
+                  location.reload();
+                }
+              } catch(e) {
+                console.error('send poll fail', e);
+              }
+            }, 1000);
+          } else {
+            alert('无法启动发送任务');
+          }
+        } catch(e) {
+          console.error('send request failed', e);
+          alert('发送请求失败: ' + e);
+        }
+      } else if (btn.classList.contains('del-btn')) {
+        const acc = btn.getAttribute('data-acc');
+        if (!confirm('确认删除账号 ' + acc + ' ?')) return;
+        const remove_profile_checkbox = document.getElementById('del_profile');
+        const remove_messages_checkbox = document.getElementById('del_messages');
+        const remove_profile = remove_profile_checkbox ? remove_profile_checkbox.checked : false;
+        const remove_messages = remove_messages_checkbox ? remove_messages_checkbox.checked : false;
+        try {
+          if (window.fetch) {
+            try {
+              const resp = await fetch('/delete_account', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ account_id: acc, remove_profile: remove_profile, remove_messages: remove_messages })});
+              if (resp.ok) {
+                location.reload();
+              } else {
+                const txt = await resp.text().catch(()=>'');
+                alert('删除失败: ' + (txt || resp.statusText));
+              }
+            } catch(e) {
+              alert('删除请求失败: ' + e);
+            }
+          } else {
+            alert('删除功能不支持');
+          }
+        } catch(e) {
+          console.error('delete failed', e);
+          alert('删除失败: ' + e);
+        }
+      }
+    });
+  }
+
+})();
 </script>
+
 </body>
 </html>
 """
-
-    # Fill placeholders with current config values (convert to strings)
-    tpl = template.replace("__ROWS_HTML__", rows_html)
-    tpl = tpl.replace("__ACCOUNT_INTERVAL__", str(config.DEFAULT_ACCOUNT_INTERVAL))
-    tpl = tpl.replace("__ROUND_INTERVAL__", str(config.DEFAULT_ROUND_INTERVAL))
-    tpl = tpl.replace("__CHAR_MIN__", str(config.CHAR_DELAY_MIN))
-    tpl = tpl.replace("__CHAR_MAX__", str(config.CHAR_DELAY_MAX))
-    tpl = tpl.replace("__BULK_POLL__", str(config.BULK_POLL_INTERVAL))
-    tpl = tpl.replace("__MAX_CONC__", str(config.MAX_CONCURRENT_SENDS))
-
-    return tpl
-
-def render_accounts_page(rows: List[Tuple]) -> str:
-    rows_html = ""
-    for r in rows:
-        try:
-            if len(r) >= 7:
-                account_id, profile_path, phone, status, today_sent, last_used, in_use = r
-            else:
-                account_id, profile_path, phone, status, today_sent, last_used = r
-                in_use = 0
-        except Exception:
-            account_id = r[0] if len(r) > 0 else ""
-            profile_path = r[1] if len(r) > 1 else ""
-            phone = r[2] if len(r) > 2 else ""
-            status = r[3] if len(r) > 3 else ""
-            today_sent = r[4] if len(r) > 4 else 0
-            last_used = r[5] if len(r) > 5 else ""
-            in_use = r[6] if len(r) > 6 else 0
-        rows_html += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
-            esc(account_id), esc(phone), esc(status), esc(today_sent), esc(last_used), esc(profile_path)
-        )
-    html_page = """<!doctype html>
-<html>
-<head><meta charset="utf-8"/><title>Accounts</title>
-<style>body{font-family:Arial}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:6px}th{background:#f2f2f2}</style>
-</head><body><h2>Accounts</h2><a href="/">返回</a><table><thead><tr><th>account_id</th><th>phone</th><th>status</th><th>today_sent</th><th>last_used</th><th>profile_path</th></tr></thead><tbody>"""
-    html_page += rows_html
-    html_page += "</tbody></table></body></html>"
-    return html_page
+    html = html_template.replace("__ACCOUNTS_TABLE__", accounts_table)
+    return html

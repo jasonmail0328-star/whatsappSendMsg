@@ -1,0 +1,23 @@
+2026/01/15-00:58:06.424 4094 Reusing MANIFEST E:\project\WhatsAppManager\accounts\acc_20260114165541\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2026/01/15-00:58:06.424 4094 Recovering log #89
+2026/01/15-00:58:06.432 4094 Reusing old log E:\project\WhatsAppManager\accounts\acc_20260114165541\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000089.log 
+2026/01/15-00:58:08.999 1178 Level-0 table #95: started
+2026/01/15-00:58:09.002 1178 Level-0 table #95: 217894 bytes OK
+2026/01/15-00:58:09.003 1178 Delete type=0 #89
+2026/01/15-00:58:09.003 2588 Manual compaction at level-0 from '\x00#\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00$\x00\x00\x00' @ 0 : 0; will stop at (end)
+2026/01/15-00:58:09.004 2588 Level-0 table #97: started
+2026/01/15-00:58:09.004 2588 Level-0 table #97: 436 bytes OK
+2026/01/15-00:58:09.005 2588 Delete type=0 #94
+2026/01/15-00:58:09.005 2588 Manual compaction at level-0 from '\x00$\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00%\x00\x00\x00' @ 0 : 0; will stop at '\x00$\x00\x00\x05' @ 271500 : 0
+2026/01/15-00:58:09.005 2588 Compacting 1@0 + 1@1 files
+2026/01/15-00:58:09.008 2588 Generated table #98@0: 7363 keys, 126298 bytes
+2026/01/15-00:58:09.008 2588 Compacted 1@0 + 1@1 files => 126298 bytes
+2026/01/15-00:58:09.008 2588 compacted to: files[ 0 1 2 0 0 0 0 ]
+2026/01/15-00:58:09.008 2588 Delete type=2 #97
+2026/01/15-00:58:09.008 2588 Manual compaction at level-0 from '\x00$\x00\x00\x05' @ 271500 : 0 .. '\x00%\x00\x00\x00' @ 0 : 0; will stop at (end)
+2026/01/15-00:58:09.025 4094 Compacting 1@1 + 2@2 files
+2026/01/15-00:58:09.043 4094 Generated table #99@1: 37337 keys, 2192762 bytes
+2026/01/15-00:58:09.051 4094 Generated table #100@1: 18811 keys, 885899 bytes
+2026/01/15-00:58:09.051 4094 Compacted 1@1 + 2@2 files => 3078661 bytes
+2026/01/15-00:58:09.051 4094 compacted to: files[ 0 0 2 0 0 0 0 ]
+2026/01/15-00:58:09.051 4094 Delete type=2 #95

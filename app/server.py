@@ -1,17 +1,56 @@
 # app/server.py
 import asyncio
+import uuid
+import threading
+from datetime import datetime
+import traceback
+import html as pyhtml
+
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
+
 from . import db, tasks, ui
-from . import config
-from .config import ROOT_URL, HOST, PORT
-import uvicorn
-from datetime import datetime
-import threading
-import os
-import time
-import shutil
+from . import config as app_config
 from .logging_config import logger
+
+# Export ROOT_URL, HOST, PORT for run.py compatibility (use defaults if missing)
+ROOT_URL = getattr(app_config, "ROOT_URL", "/")
+HOST = getattr(app_config, "HOST", "127.0.0.1")
+PORT = getattr(app_config, "PORT", 8000)
+
+def html_escape(s: str) -> str:
+    return pyhtml.escape(s)
+
+def sanitize_settings(payload: dict) -> dict:
+    allowed = {
+        "MAX_PROFILE_STARTS": int,
+        "PROFILE_START_MIN_DELAY": float,
+        "PROFILE_START_MAX_DELAY": float,
+        "BULK_POLL_INTERVAL": float,
+        "ADD_POLL_INTERVAL": float,
+        "SEND_POLL_INTERVAL": float,
+        "STORAGE_FLUSH_WAIT": float,
+        "PERSIST_VERIFY_WAIT": float,
+        "PERSIST_VERIFY_RETRIES": int,
+        "MAX_CONCURRENT_SENDS": int,
+        "LOGIN_TIMEOUT": int,
+        "QR_DETECT_RETRIES": int
+    }
+    out = {}
+    for k, t in allowed.items():
+        if k in payload:
+            try:
+                v = payload[k]
+                nv = int(v) if t is int else float(v)
+                out[k] = nv
+            except Exception:
+                logger.warning("Invalid setting value for %s: %s", k, payload.get(k))
+    if "PROFILE_START_MIN_DELAY" in out and "PROFILE_START_MAX_DELAY" in out:
+        mn = out["PROFILE_START_MIN_DELAY"]
+        mx = out["PROFILE_START_MAX_DELAY"]
+        if mn > mx:
+            out["PROFILE_START_MIN_DELAY"], out["PROFILE_START_MAX_DELAY"] = mx, mn
+    return out
 
 def create_app() -> FastAPI:
     app = FastAPI()
@@ -19,13 +58,19 @@ def create_app() -> FastAPI:
 
     @app.get("/", response_class=HTMLResponse)
     async def index():
-        rows = db.list_accounts()
-        return HTMLResponse(ui.render_main_page(rows))
+        try:
+            rows = db.list_accounts()
+            return HTMLResponse(ui.render_main_page(rows))
+        except Exception as e:
+            tb = traceback.format_exc()
+            logger.exception("Error rendering main page: %s", e)
+            body = "<h3>Server error while rendering page</h3><pre>{}</pre>".format(html_escape(tb))
+            return HTMLResponse(body, status_code=500)
 
     @app.post("/add")
     async def add_account_endpoint():
         sid = "s_" + datetime.utcnow().strftime("%Y%m%d%H%M%S%f")
-        profile_name = "acc_" + datetime.utcnow().strftime("%Y%m%d%H%M%S")
+        profile_name = "acc_" + uuid.uuid4().hex
         try:
             tasks.ADD_TASKS[sid] = tasks.make_status_struct("queued")
         except Exception:
@@ -71,8 +116,6 @@ def create_app() -> FastAPI:
         per_account = bool(payload.get("per_account"))
         message = payload.get("message")
         dry_run = bool(payload.get("dry_run"))
-        account_delay = float(payload.get("account_delay") or config.DEFAULT_ACCOUNT_INTERVAL)
-        round_delay = float(payload.get("round_delay") or config.DEFAULT_ROUND_INTERVAL)
         if not message:
             return JSONResponse({"error": "message required"}, status_code=400)
         sid = "bulk_" + datetime.utcnow().strftime("%Y%m%d%H%M%S%f")
@@ -80,75 +123,37 @@ def create_app() -> FastAPI:
             tasks.BULK_TASKS[sid] = tasks.make_status_struct("queued", result={"requested_count": count, "results": []})
         except Exception:
             tasks.BULK_TASKS[sid] = {"status": "queued", "result": {"requested_count": count, "results": []}, "error": "", "trace": ""}
-        asyncio.create_task(tasks.schedule_bulk_send(sid, count, per_account, message, dry_run, account_delay=account_delay, round_delay=round_delay))
+        asyncio.create_task(tasks.schedule_bulk_send(sid, count, per_account, message, dry_run))
         return JSONResponse({"status": "queued", "session_id": sid})
 
-    @app.get("/bulk_status/{sid}")
-    async def bulk_status(sid: str):
-        s = tasks.BULK_TASKS.get(sid)
-        if not s:
-            return JSONResponse({"status": "not_found"})
-        return JSONResponse(s)
-
-    @app.post("/delete_account")
-    async def delete_account_endpoint(req: Request):
+    @app.post("/bulk_cancel")
+    async def bulk_cancel(req: Request):
         payload = await req.json()
-        account_id = payload.get("account_id")
-        remove_profile = bool(payload.get("remove_profile"))
-        remove_messages = bool(payload.get("remove_messages"))
-        if not account_id:
-            return JSONResponse({"error": "account_id required"}, status_code=400)
-        profile_path = db.get_account_profile(account_id)
-        if not profile_path:
-            return JSONResponse({"error": "account not found"}, status_code=404)
-        if db.is_account_in_use(account_id):
-            return JSONResponse({"error": "account is currently in use"}, status_code=409)
+        sid = payload.get("session_id")
+        if not sid:
+            return JSONResponse({"error": "session_id required"}, status_code=400)
+        if sid not in tasks.BULK_TASKS:
+            return JSONResponse({"error": "session not found"}, status_code=404)
         try:
-            db.delete_account(account_id, remove_messages=remove_messages)
+            tasks.cancel_bulk(sid)
+            tasks.BULK_TASKS[sid] = tasks.make_status_struct("cancelling", result=tasks.BULK_TASKS[sid].get("result", {}))
+            return JSONResponse({"status": "cancelling", "session_id": sid})
         except Exception as e:
-            logger.exception("delete_account db delete failed: %s", e)
-            return JSONResponse({"error": "db_delete_failed", "detail": str(e)}, status_code=500)
-        if remove_profile and profile_path:
-            try:
-                shutil.rmtree(profile_path, ignore_errors=True)
-            except Exception as e:
-                logger.exception("delete_account remove_profile failed: %s", e)
-                return JSONResponse({"error": "remove_profile_failed", "detail": str(e)}, status_code=500)
-        logger.info("delete_account ok account=%s remove_profile=%s remove_messages=%s", account_id, remove_profile, remove_messages)
-        return JSONResponse({"ok": True})
-
-    @app.get("/accounts", response_class=HTMLResponse)
-    async def accounts_page():
-        rows = db.list_accounts()
-        return HTMLResponse(ui.render_accounts_page(rows))
-
-    # Settings endpoints: GET current settings, POST to save new ones
-    @app.get("/settings")
-    async def get_settings():
-        resp = {
-            "MAX_CONCURRENT_SENDS": config.MAX_CONCURRENT_SENDS,
-            "BULK_POLL_INTERVAL": config.BULK_POLL_INTERVAL,
-            "DEFAULT_ACCOUNT_INTERVAL": config.DEFAULT_ACCOUNT_INTERVAL,
-            "DEFAULT_ROUND_INTERVAL": config.DEFAULT_ROUND_INTERVAL,
-            "CHAR_DELAY_MIN": config.CHAR_DELAY_MIN,
-            "CHAR_DELAY_MAX": config.CHAR_DELAY_MAX
-        }
-        return JSONResponse(resp)
-
-    @app.post("/settings")
-    async def post_settings(req: Request):
-        payload = await req.json()
-        # Save via config.save_settings, which will persist file and reload config vars
-        saved = config.save_settings(payload)
-        # After saving config, reload runtime pieces (e.g., tasks semaphore)
-        try:
-            tasks.reload_config()
-        except Exception:
-            logger.exception("Failed to reload tasks config after settings update")
-        return JSONResponse({"ok": True, "saved": saved})
+            logger.exception("bulk_cancel failed: %s", e)
+            return JSONResponse({"error": "cancel_failed", "detail": str(e)}, status_code=500)
 
     return app
 
-def run_uvicorn(app):
-    logger.info("Starting server on %s:%s", HOST, PORT)
-    uvicorn.run(app, host=HOST, port=PORT, log_level="info")
+def run_uvicorn(app=None, host=None, port=None, reload=False, block=False):
+    import uvicorn
+    _app = app or create_app()
+    _host = host or HOST
+    _port = int(port or PORT)
+    def _runner():
+        uvicorn.run(_app, host=_host, port=_port, log_level="info", reload=reload)
+    if block:
+        _runner()
+        return None
+    t = threading.Thread(target=_runner, daemon=True)
+    t.start()
+    return t

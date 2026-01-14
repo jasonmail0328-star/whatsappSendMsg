@@ -367,3 +367,43 @@ Call log:
   - navigating to "https://web.whatsapp.com/", waiting until "networkidle"
 
 2026-01-13 18:58:01 WARNING whatsapp_manager ADD failed s_20260113105759430780 {'success': False, 'reason': 'login_timeout', 'profile_path': 'E:\\project\\WhatsAppManager\\accounts\\acc_20260113105759', 'error': 'Page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n  - navigating to "https://web.whatsapp.com/", waiting until "networkidle"\n'}
+2026-01-15 00:52:35 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-15 00:52:35 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-15 00:52:35 INFO whatsapp_manager Starting server on 127.0.0.1:8000
+2026-01-15 00:54:27 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-15 00:54:27 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-15 00:54:27 INFO whatsapp_manager Starting server on 127.0.0.1:8000
+2026-01-15 00:54:48 INFO whatsapp_manager ADD task s_20260114165448145953 starting, profile=E:\project\WhatsAppManager\accounts\acc_20260114165448
+2026-01-15 00:55:35 INFO whatsapp_manager Upserted account acc_841f4e0adfa8 profile=E:\project\WhatsAppManager\accounts\acc_20260114165448 phone=4900611
+2026-01-15 00:55:35 INFO whatsapp_manager ADD task s_20260114165448145953 registered account=acc_841f4e0adfa8 phone=4900611 profile=E:\project\WhatsAppManager\accounts\acc_20260114165448
+2026-01-15 00:55:35 INFO whatsapp_manager ADD done s_20260114165448145953 {'success': True, 'profile_path': 'E:\\project\\WhatsAppManager\\accounts\\acc_20260114165448', 'account_id': 'acc_841f4e0adfa8', 'phone': '4900611'}
+2026-01-15 00:55:41 INFO whatsapp_manager ADD task s_20260114165541938181 starting, profile=E:\project\WhatsAppManager\accounts\acc_20260114165541
+2026-01-15 00:56:27 INFO whatsapp_manager detect_account_info_with_retries finished, result={'phone': None, 'jid': None, 'displayName': None}
+2026-01-15 00:56:27 INFO whatsapp_manager Upserted account acc_b57df2faa995 profile=E:\project\WhatsAppManager\accounts\acc_20260114165541 phone=None
+2026-01-15 00:56:27 INFO whatsapp_manager ADD task s_20260114165541938181 registered account=acc_b57df2faa995 phone=None profile=E:\project\WhatsAppManager\accounts\acc_20260114165541
+2026-01-15 00:56:27 INFO whatsapp_manager ADD done s_20260114165541938181 {'success': True, 'profile_path': 'E:\\project\\WhatsAppManager\\accounts\\acc_20260114165541', 'account_id': 'acc_b57df2faa995', 'phone': None}
+2026-01-15 00:57:46 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-15 00:57:46 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-15 00:57:46 INFO whatsapp_manager Starting server on 127.0.0.1:8000
+2026-01-15 00:58:12 INFO whatsapp_manager [send] account=acc_b57df2faa995 chosen target: 杰3820转 (杰3820转)
+2026-01-15 00:58:18 INFO whatsapp_manager log_message account=acc_b57df2faa995 contact_jid=杰3820转 result=sent
+2026-01-15 00:58:18 INFO whatsapp_manager SEND done bulk_20260114165805683413_0 account=acc_b57df2faa995 target={'name': '杰3820转', 'jid': '杰3820转'}
+2026-01-15 00:58:29 INFO whatsapp_manager [send] account=acc_841f4e0adfa8 chosen target: +234 814 063 6395 (+234 814 063 6395)
+2026-01-15 00:58:37 INFO whatsapp_manager log_message account=acc_841f4e0adfa8 contact_jid=+234 814 063 6395 result=sent
+2026-01-15 00:58:37 INFO whatsapp_manager SEND done bulk_20260114165805683413_1 account=acc_841f4e0adfa8 target={'name': '+234 814 063 6395', 'jid': '+234 814 063 6395'}
+2026-01-15 00:59:34 INFO whatsapp_manager [send] account=acc_b57df2faa995 chosen target: 杰8192转 (杰8192转)
+2026-01-15 00:59:41 INFO whatsapp_manager log_message account=acc_b57df2faa995 contact_jid=杰8192转 result=sent
+2026-01-15 00:59:41 INFO whatsapp_manager SEND done bulk_20260114165929155648_0 account=acc_b57df2faa995 target={'name': '杰8192转', 'jid': '杰8192转'}
+2026-01-15 00:59:52 INFO whatsapp_manager [send] account=acc_841f4e0adfa8 chosen target: HH5774 (HH5774)
+2026-01-15 00:59:58 INFO whatsapp_manager log_message account=acc_841f4e0adfa8 contact_jid=HH5774 result=sent
+2026-01-15 00:59:58 INFO whatsapp_manager SEND done bulk_20260114165929155648_1 account=acc_841f4e0adfa8 target={'name': 'HH5774', 'jid': 'HH5774'}
+2026-01-15 01:03:11 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-15 01:03:11 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-15 01:03:11 INFO whatsapp_manager Starting server on 127.0.0.1:8000
+2026-01-15 01:21:09 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-15 01:21:09 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-15 01:25:33 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-15 01:25:33 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-15 01:25:52 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-15 01:25:52 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
+2026-01-15 01:27:39 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db

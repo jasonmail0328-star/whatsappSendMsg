@@ -1,24 +1,22 @@
 # app/tasks.py
 import asyncio
-import hashlib
 import traceback
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from . import db, worker, config
 from .logging_config import logger
-import random
 import time
 
 ADD_TASKS: Dict[str, Dict] = {}
 SEND_TASKS: Dict[str, Dict] = {}
 BULK_TASKS: Dict[str, Dict] = {}
+BULK_CANCELS: Dict[str, asyncio.Event] = {}
 
-# Global concurrency semaphore (initialized from config)
-_send_semaphore = asyncio.Semaphore(config.MAX_CONCURRENT_SENDS)
+# Global concurrency semaphore (fallback default 2)
+_send_semaphore = asyncio.Semaphore(int(getattr(config, "MAX_CONCURRENT_SENDS", 2)))
 
 def make_status_struct(status: str, result: dict = None, error: str = None, trace: str = None) -> Dict:
     return {"status": status, "result": result or {}, "error": error or "", "trace": trace or ""}
 
-# Add-account wrapper
 async def schedule_add_account(profile_name: str, session_id: str):
     ADD_TASKS[session_id] = make_status_struct("queued")
     try:
@@ -34,12 +32,10 @@ async def schedule_add_account(profile_name: str, session_id: str):
         ADD_TASKS[session_id] = make_status_struct("error", error=str(e), trace=traceback.format_exc())
         logger.exception("ADD exception %s", e)
 
-# Send-message wrapper (use async worker.select_and_send_async)
 async def schedule_send_message(session_id: str, account_id: str, profile_path: str, message: str, dry_run: bool):
     global _send_semaphore
     SEND_TASKS[session_id] = make_status_struct("queued")
 
-    # 获取全局并发许可（排队）
     await _send_semaphore.acquire()
     try:
         locked = False
@@ -62,7 +58,6 @@ async def schedule_send_message(session_id: str, account_id: str, profile_path: 
             result = await worker.select_and_send_async(account_id, profile_path, message, dry_run=dry_run, timeout=120)
             if result.get("ok"):
                 SEND_TASKS[session_id] = make_status_struct("done", result=result)
-                # 更新使用统计
                 try:
                     db.update_account_usage(account_id, sent_inc=1 if not dry_run else 0)
                 except Exception:
@@ -83,18 +78,24 @@ async def schedule_send_message(session_id: str, account_id: str, profile_path: 
             logger.exception("set_account_in_use clear failed for %s", account_id)
         _send_semaphore.release()
 
-# Bulk send wrapper: sequential round-robin with account_delay and round_delay
+def cancel_bulk(session_id: str):
+    ev = BULK_CANCELS.get(session_id)
+    if not ev:
+        ev = asyncio.Event()
+        BULK_CANCELS[session_id] = ev
+    ev.set()
+
 async def schedule_bulk_send(session_id: str, count: int, per_account: bool, message: str, dry_run: bool, account_delay: float = None, round_delay: float = None):
     if account_delay is None:
-        account_delay = getattr(config, "DEFAULT_ACCOUNT_INTERVAL", 1.0)
+        account_delay = float(getattr(config, "DEFAULT_ACCOUNT_INTERVAL", 1.0))
     if round_delay is None:
-        round_delay = getattr(config, "DEFAULT_ROUND_INTERVAL", 5.0)
+        round_delay = float(getattr(config, "DEFAULT_ROUND_INTERVAL", 5.0))
 
     BULK_TASKS[session_id] = make_status_struct("queued", result={"requested_count": count, "results": []})
     try:
         BULK_TASKS[session_id] = make_status_struct("running", result={"requested_count": count, "results": []})
         rows = db.list_accounts()
-        accounts = []
+        accounts: List[Tuple[str, str]] = []
         for r in rows:
             if len(r) >= 2:
                 account_id = r[0]
@@ -107,19 +108,36 @@ async def schedule_bulk_send(session_id: str, count: int, per_account: bool, mes
             return {"ok": False, "err": "no_accounts"}
 
         results = []
-        # determine total to send
+
+        # New semantics:
+        # per_account == True: send exactly one message per account (legacy)
+        # per_account == False: treat count as number of rounds; do count rounds across all accounts
         if per_account:
+            rounds = 1
             total_to_send = len(accounts)
         else:
-            total_to_send = count
+            rounds = int(count) if count > 0 else 0
+            total_to_send = len(accounts) * rounds
 
         sent_count = 0
-        # do round-robin cycles until sent_count == total_to_send
-        while sent_count < total_to_send:
-            for accid, prof in accounts:
+        round_idx = 0
+
+        # Ensure cancellation event exists
+        BULK_CANCELS[session_id] = BULK_CANCELS.get(session_id, asyncio.Event())
+
+        def cancelled():
+            ev = BULK_CANCELS.get(session_id)
+            return ev.is_set() if ev else False
+
+        while round_idx < rounds:
+            if cancelled():
+                logger.info("BULK %s cancelled before round %s", session_id, round_idx + 1)
+                BULK_TASKS[session_id] = make_status_struct("cancelled", result={"requested_count": sent_count, "results": results})
+                return {"ok": False, "err": "cancelled", "requested": sent_count, "results": results}
+            for acc_idx, (accid, prof) in enumerate(accounts):
                 if sent_count >= total_to_send:
                     break
-                child_sid = f"{session_id}_{sent_count}"
+                child_sid = f"{session_id}_r{round_idx+1}_a{acc_idx+1}"
                 try:
                     r = await schedule_send_message(child_sid, accid, prof, message, dry_run)
                     results.append({"child_session": child_sid, "account": accid, "result": r})
@@ -134,8 +152,8 @@ async def schedule_bulk_send(session_id: str, count: int, per_account: bool, mes
                     await asyncio.sleep(float(account_delay))
                 except Exception:
                     await asyncio.sleep(1.0)
-            # after a full cycle, if still need to send, wait round_delay
-            if sent_count < total_to_send:
+            round_idx += 1
+            if round_idx < rounds:
                 try:
                     await asyncio.sleep(float(round_delay))
                 except Exception:
@@ -152,16 +170,3 @@ async def schedule_bulk_send(session_id: str, count: int, per_account: bool, mes
         BULK_TASKS[session_id] = make_status_struct("error", error=str(e), trace=traceback.format_exc())
         logger.exception("BULK exception %s", e)
         return {"ok": False, "err": str(e)}
-
-# Runtime helper: reload runtime config (e.g., semaphore) after settings change
-def reload_config():
-    """
-    Recreate global semaphore based on config.MAX_CONCURRENT_SENDS.
-    Call this after saving new settings to apply concurrency change immediately.
-    """
-    global _send_semaphore
-    try:
-        _send_semaphore = asyncio.Semaphore(int(config.MAX_CONCURRENT_SENDS))
-        logger.info("Reloaded tasks config: MAX_CONCURRENT_SENDS=%s", config.MAX_CONCURRENT_SENDS)
-    except Exception:
-        logger.exception("Failed to reload tasks config")

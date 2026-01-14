@@ -1,91 +1,90 @@
-#!/usr/bin/env python3
-"""
-run.py - 启动脚本（含自动引导 bootstrap）
-- 在真正启动之前会调用 bootstrap.ensure_requirements()（通过 import bootstrap 并运行）
-"""
-import os
-import sys
-
-# 先运行本地 bootstrap（若存在），以确保依赖已安装
-BOOTSTRAP_PY = os.path.join(os.path.dirname(__file__), "bootstrap.py")
-if os.path.exists(BOOTSTRAP_PY):
-    # 避免重复执行 bootstrap（bootstrap 自身会根据环境判断）
-    try:
-        # 执行 bootstrap as script to allow execv inside it
-        with open(BOOTSTRAP_PY, "rb") as f:
-            code = compile(f.read(), BOOTSTRAP_PY, "exec")
-            exec(code, {"__name__": "__main__"})
-    except SystemExit:
-        # bootstrap may exit the process after instructions
-        raise
-    except Exception as e:
-        print("Bootstrap 执行失败：", e)
-        print("请检查 bootstrap.py 输出并手动安装依赖。")
-        sys.exit(1)
-
-# 现在应该可安全导入 app.server 并继续启动
-import argparse
-import threading
+# run.py
+# 启动服务器并在浏览器中自动打开 UI 页面（等待服务ready后再打开）
 import time
+import threading
 import webbrowser
-import shutil
-import subprocess
-import os
-from app.server import create_app, run_uvicorn, ROOT_URL
-from app.config import BROWSER_AUTO_OPEN_DELAY, BROWSER_LAUNCH_RETRIES
-from app.logging_config import logger
+import sys
+from urllib.request import urlopen
+from urllib.error import URLError, HTTPError
 
-def _launch_browser_executable(exe_path: str, url: str) -> bool:
-    if not exe_path:
-        return False
+# 尝试从 app.server 导入 create_app, run_uvicorn, HOST, PORT
+try:
+    from app.server import create_app, run_uvicorn, HOST, PORT  # type: ignore
+except Exception:
+    # 兼容性回退：如果 app.server 没有 run_uvicorn，导入 create_app 并使用 uvicorn.run
     try:
-        exe = exe_path
-        if not os.path.isabs(exe_path):
-            found = shutil.which(exe_path)
-            if found:
-                exe = found
-        args = [exe, "--new-window", url]
-        subprocess.Popen(args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, close_fds=True)
-        return True
+        from app.server import create_app, HOST, PORT  # type: ignore
+        run_uvicorn = None
     except Exception as e:
-        logger.warning("Browser launch failed for %s: %s", exe_path, e)
-        return False
+        print("无法从 app.server 导入 create_app:", e)
+        raise
 
-def _open_browser_later(url: str, delay: float = 1.0, preferred_browser: str = None, retries: int = 1):
-    def _target():
-        time.sleep(delay)
-        tried = False
-        if preferred_browser:
-            tried = _launch_browser_executable(preferred_browser, url)
-        if not tried:
-            for name in ("chrome", "chrome.exe", "msedge", "msedge.exe", "firefox", "firefox.exe"):
-                if shutil.which(name):
-                    ok = _launch_browser_executable(name, url)
-                    if ok:
-                        tried = True
-                        break
-        if not tried:
-            try:
-                webbrowser.open_new(url)
-            except Exception as e:
-                logger.error("自动打开浏览器失败：%s 。请手动打开：%s", e, url)
-    t = threading.Thread(target=_target, daemon=True)
-    t.start()
+APP_HOST = HOST if 'HOST' in globals() else "127.0.0.1"
+APP_PORT = int(PORT) if 'PORT' in globals() else 8000
+BASE_URL = f"http://{APP_HOST}:{APP_PORT}"
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--no-open", action="store_true", help="启动服务但不要自动打开浏览器")
-    parser.add_argument("--browser", type=str, default=None, help="首选浏览器（chrome/msedge/firefox 或可执行路径）")
-    parser.add_argument("--delay", type=float, default=BROWSER_AUTO_OPEN_DELAY, help="自动打开浏览器延迟（秒）")
-    args = parser.parse_args()
+def open_browser_when_ready(url: str, timeout: float = 10.0, check_interval: float = 0.25):
+    """
+    Poll the server until it's responding (or timeout), then open the default browser.
+    """
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        try:
+            # Try a lightweight GET; if server responds, open browser
+            with urlopen(url, timeout=1) as resp:
+                # If we get any HTTP response, proceed to open browser
+                break
+        except (URLError, HTTPError, OSError):
+            time.sleep(check_interval)
+            continue
+    try:
+        webbrowser.open(url)
+    except Exception as e:
+        print("无法自动打开浏览器，请手动打开：", url, "（错误：", e, ")")
 
+def start_server_and_browser():
     app = create_app()
 
-    logger.info("Starting WhatsApp Manager server, opening UI at %s", ROOT_URL)
-    if not args.no_open:
-        _open_browser_later(ROOT_URL, delay=args.delay, preferred_browser=args.browser, retries=BROWSER_LAUNCH_RETRIES)
+    # Start server
+    server_thread = None
+    if 'run_uvicorn' in globals() and callable(run_uvicorn):
+        try:
+            # run_uvicorn(app, host=APP_HOST, port=APP_PORT, reload=False, block=False)
+            server_thread = run_uvicorn(app=app, host=APP_HOST, port=APP_PORT, reload=False, block=False)
+            print(f"Starting server in background thread at {BASE_URL}")
+        except Exception as e:
+            print("run_uvicorn 调用失败，尝试退回到 uvicorn.run:", e)
+            server_thread = None
 
-    run_uvicorn(app)
+    if server_thread is None:
+        # fallback: start uvicorn in a thread
+        try:
+            import uvicorn
+            def _run_uvicorn():
+                uvicorn.run(app, host=APP_HOST, port=APP_PORT, log_level="info")
+            server_thread = threading.Thread(target=_run_uvicorn, daemon=True)
+            server_thread.start()
+            print(f"Starting uvicorn in background thread at {BASE_URL}")
+        except Exception as e:
+            print("无法启动 uvicorn:", e)
+            raise
+
+    # Start browser opener in a daemon thread so it doesn't block shutdown
+    opener = threading.Thread(target=open_browser_when_ready, args=(BASE_URL, 15.0, 0.25), daemon=True)
+    opener.start()
+
+    return server_thread, opener
 
 if __name__ == "__main__":
-    main()
+    try:
+        start_server_and_browser()
+        # Keep main thread alive. Server runs in background thread.
+        print(f"服务器启动中，UI 地址：{BASE_URL}")
+        while True:
+            time.sleep(1.0)
+    except KeyboardInterrupt:
+        print("收到中断信号，正在退出...")
+        sys.exit(0)
+    except Exception as e:
+        print("运行时出错:", e)
+        raise
