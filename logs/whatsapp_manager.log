@@ -407,3 +407,79 @@ Call log:
 2026-01-15 01:25:52 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
 2026-01-15 01:25:52 INFO whatsapp_manager Starting WhatsApp Manager server, opening UI at http://127.0.0.1:8000
 2026-01-15 01:27:39 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-15 01:43:39 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-15 01:44:16 INFO whatsapp_manager log_message account=acc_b57df2faa995 contact_jid=杰4952转 result=sent
+2026-01-15 01:44:16 INFO whatsapp_manager SEND done bulk_20260114174404018690_r1_a1 account=acc_b57df2faa995 target={'name': '杰4952转', 'jid': '杰4952转'}
+2026-01-15 01:44:35 INFO whatsapp_manager log_message account=acc_841f4e0adfa8 contact_jid=杰2628优 VIP1 result=sent
+2026-01-15 01:44:35 INFO whatsapp_manager SEND done bulk_20260114174404018690_r1_a2 account=acc_841f4e0adfa8 target={'name': '杰2628优 VIP1', 'jid': '杰2628优 VIP1'}
+2026-01-15 01:45:40 INFO whatsapp_manager BULK bulk_20260114174404018690 cancelled before round 2
+2026-01-15 01:47:11 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-15 01:47:48 INFO whatsapp_manager log_message account=acc_b57df2faa995 contact_jid=杰0757转 result=sent
+2026-01-15 01:47:48 INFO whatsapp_manager SEND done bulk_20260114174735152474_r1_a1 account=acc_b57df2faa995 target={'name': '杰0757转', 'jid': '杰0757转'}
+2026-01-15 01:48:06 INFO whatsapp_manager log_message account=acc_841f4e0adfa8 contact_jid=A啊0482 result=sent
+2026-01-15 01:48:06 INFO whatsapp_manager SEND done bulk_20260114174735152474_r1_a2 account=acc_841f4e0adfa8 target={'name': 'A啊0482', 'jid': 'A啊0482'}
+2026-01-15 01:49:24 INFO whatsapp_manager log_message account=acc_b57df2faa995 contact_jid=杰1426转 result=sent
+2026-01-15 01:49:24 INFO whatsapp_manager SEND done bulk_20260114174735152474_r2_a1 account=acc_b57df2faa995 target={'name': '杰1426转', 'jid': '杰1426转'}
+2026-01-15 01:49:43 INFO whatsapp_manager log_message account=acc_841f4e0adfa8 contact_jid=+234 902 948 6377 result=sent
+2026-01-15 01:49:43 INFO whatsapp_manager SEND done bulk_20260114174735152474_r2_a2 account=acc_841f4e0adfa8 target={'name': '+234 902 948 6377', 'jid': '+234 902 948 6377'}
+2026-01-15 01:49:53 INFO whatsapp_manager ADD task s_20260114174953798374 starting, profile=E:\project\WhatsAppManager\accounts\acc_ef79698e103f404b82db654c3c74066a
+2026-01-15 01:50:41 INFO whatsapp_manager Upserted account acc_b8cb3d5b7225 profile=E:\project\WhatsAppManager\accounts\acc_ef79698e103f404b82db654c3c74066a phone=722559
+2026-01-15 01:50:41 INFO whatsapp_manager ADD task s_20260114174953798374 registered account=acc_b8cb3d5b7225 phone=722559 profile=E:\project\WhatsAppManager\accounts\acc_ef79698e103f404b82db654c3c74066a
+2026-01-15 01:50:41 INFO whatsapp_manager ADD done s_20260114174953798374 {'success': True, 'profile_path': 'E:\\project\\WhatsAppManager\\accounts\\acc_ef79698e103f404b82db654c3c74066a', 'account_id': 'acc_b8cb3d5b7225', 'phone': '722559'}
+2026-01-15 01:51:08 INFO whatsapp_manager ADD task s_20260114175108971763 starting, profile=E:\project\WhatsAppManager\accounts\acc_fc0472bb861b45d790a4b0e97759b2b7
+2026-01-15 01:52:28 INFO whatsapp_manager Upserted account acc_6525aa536716 profile=E:\project\WhatsAppManager\accounts\acc_fc0472bb861b45d790a4b0e97759b2b7 phone=None
+2026-01-15 01:52:28 INFO whatsapp_manager ADD task s_20260114175108971763 registered account=acc_6525aa536716 phone=None profile=E:\project\WhatsAppManager\accounts\acc_fc0472bb861b45d790a4b0e97759b2b7
+2026-01-15 01:52:28 INFO whatsapp_manager ADD done s_20260114175108971763 {'success': True, 'profile_path': 'E:\\project\\WhatsAppManager\\accounts\\acc_fc0472bb861b45d790a4b0e97759b2b7', 'account_id': 'acc_6525aa536716', 'phone': None}
+2026-01-15 01:53:16 INFO whatsapp_manager log_message account=acc_6525aa536716 contact_jid=杰4989转 result=sent
+2026-01-15 01:53:16 INFO whatsapp_manager SEND done bulk_20260114175304595187_r1_a1 account=acc_6525aa536716 target={'name': '杰4989转', 'jid': '杰4989转'}
+2026-01-15 01:53:38 INFO whatsapp_manager log_message account=acc_b8cb3d5b7225 contact_jid=+263 77 682 4919 result=sent
+2026-01-15 01:53:38 INFO whatsapp_manager SEND done bulk_20260114175304595187_r1_a2 account=acc_b8cb3d5b7225 target={'name': '+263 77 682 4919', 'jid': '+263 77 682 4919'}
+2026-01-15 01:53:57 INFO whatsapp_manager log_message account=acc_b57df2faa995 contact_jid=+234 916 165 2083 result=sent
+2026-01-15 01:53:57 INFO whatsapp_manager SEND done bulk_20260114175304595187_r1_a3 account=acc_b57df2faa995 target={'name': '+234 916 165 2083', 'jid': '+234 916 165 2083'}
+2026-01-15 01:54:16 INFO whatsapp_manager log_message account=acc_841f4e0adfa8 contact_jid=+234 816 271 0542 result=sent
+2026-01-15 01:54:16 INFO whatsapp_manager SEND done bulk_20260114175304595187_r1_a4 account=acc_841f4e0adfa8 target={'name': '+234 816 271 0542', 'jid': '+234 816 271 0542'}
+2026-01-15 01:55:33 INFO whatsapp_manager log_message account=acc_6525aa536716 contact_jid=杰6091 result=sent
+2026-01-15 01:55:33 INFO whatsapp_manager SEND done bulk_20260114175304595187_r2_a1 account=acc_6525aa536716 target={'name': '杰6091', 'jid': '杰6091'}
+2026-01-15 01:55:54 INFO whatsapp_manager log_message account=acc_b8cb3d5b7225 contact_jid=+255 689 777 015 result=sent
+2026-01-15 01:55:54 INFO whatsapp_manager SEND done bulk_20260114175304595187_r2_a2 account=acc_b8cb3d5b7225 target={'name': '+255 689 777 015', 'jid': '+255 689 777 015'}
+2026-01-15 01:56:11 INFO whatsapp_manager log_message account=acc_b57df2faa995 contact_jid=杰7434转 result=sent
+2026-01-15 01:56:11 INFO whatsapp_manager SEND done bulk_20260114175304595187_r2_a3 account=acc_b57df2faa995 target={'name': '杰7434转', 'jid': '杰7434转'}
+2026-01-15 01:56:30 INFO whatsapp_manager log_message account=acc_841f4e0adfa8 contact_jid=+234 814 720 6626 result=sent
+2026-01-15 01:56:30 INFO whatsapp_manager SEND done bulk_20260114175304595187_r2_a4 account=acc_841f4e0adfa8 target={'name': '+234 814 720 6626', 'jid': '+234 814 720 6626'}
+2026-01-15 01:57:17 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-15 02:16:49 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-15 02:16:49 INFO whatsapp_manager Pruning missing profile for account=acc_6525aa536716 path=E:\project\WhatsAppManager\accounts\acc_fc0472bb861b45d790a4b0e97759b2b7
+2026-01-15 02:16:49 INFO whatsapp_manager delete_account acc_6525aa536716 remove_messages=False
+2026-01-15 02:16:49 INFO whatsapp_manager Pruning missing profile for account=acc_b8cb3d5b7225 path=E:\project\WhatsAppManager\accounts\acc_ef79698e103f404b82db654c3c74066a
+2026-01-15 02:16:49 INFO whatsapp_manager delete_account acc_b8cb3d5b7225 remove_messages=False
+2026-01-15 02:16:49 INFO whatsapp_manager Pruning missing profile for account=acc_b57df2faa995 path=E:\project\WhatsAppManager\accounts\acc_20260114165541
+2026-01-15 02:16:49 INFO whatsapp_manager delete_account acc_b57df2faa995 remove_messages=False
+2026-01-15 02:16:49 INFO whatsapp_manager Pruning missing profile for account=acc_841f4e0adfa8 path=E:\project\WhatsAppManager\accounts\acc_20260114165448
+2026-01-15 02:16:49 INFO whatsapp_manager delete_account acc_841f4e0adfa8 remove_messages=False
+2026-01-15 02:16:49 INFO whatsapp_manager Pruned 4 missing account(s): ['acc_6525aa536716', 'acc_b8cb3d5b7225', 'acc_b57df2faa995', 'acc_841f4e0adfa8']
+2026-01-15 02:17:01 INFO whatsapp_manager ADD task s_20260114181701707757 starting, profile=E:\project\WhatsAppManager\accounts\acc_c5521532bfe443e0b3999894cdfbf611
+2026-01-15 02:17:54 INFO whatsapp_manager Upserted account acc_15908f8300cc profile=E:\project\WhatsAppManager\accounts\acc_c5521532bfe443e0b3999894cdfbf611 phone=None
+2026-01-15 02:17:54 INFO whatsapp_manager ADD task s_20260114181701707757 registered account=acc_15908f8300cc phone=None profile=E:\project\WhatsAppManager\accounts\acc_c5521532bfe443e0b3999894cdfbf611
+2026-01-15 02:17:54 INFO whatsapp_manager ADD done s_20260114181701707757 {'success': True, 'profile_path': 'E:\\project\\WhatsAppManager\\accounts\\acc_c5521532bfe443e0b3999894cdfbf611', 'account_id': 'acc_15908f8300cc', 'phone': None}
+2026-01-15 02:18:04 INFO whatsapp_manager ADD task s_20260114181804404028 starting, profile=E:\project\WhatsAppManager\accounts\acc_b027083f7d824f71956bb750983077d9
+2026-01-15 02:19:15 INFO whatsapp_manager Upserted account acc_841f4e0adfa8 profile=E:\project\WhatsAppManager\accounts\acc_b027083f7d824f71956bb750983077d9 phone=4900611
+2026-01-15 02:19:15 INFO whatsapp_manager ADD task s_20260114181804404028 registered account=acc_841f4e0adfa8 phone=4900611 profile=E:\project\WhatsAppManager\accounts\acc_b027083f7d824f71956bb750983077d9
+2026-01-15 02:19:15 INFO whatsapp_manager ADD done s_20260114181804404028 {'success': True, 'profile_path': 'E:\\project\\WhatsAppManager\\accounts\\acc_b027083f7d824f71956bb750983077d9', 'account_id': 'acc_841f4e0adfa8', 'phone': '4900611'}
+2026-01-15 02:19:18 INFO whatsapp_manager ADD task s_20260114181918214199 starting, profile=E:\project\WhatsAppManager\accounts\acc_b76e5a9bfec24ee19cca2476e174ea97
+2026-01-15 02:20:16 INFO whatsapp_manager Upserted account acc_a7db7af415be profile=E:\project\WhatsAppManager\accounts\acc_b76e5a9bfec24ee19cca2476e174ea97 phone=None
+2026-01-15 02:20:17 INFO whatsapp_manager ADD task s_20260114181918214199 registered account=acc_a7db7af415be phone=None profile=E:\project\WhatsAppManager\accounts\acc_b76e5a9bfec24ee19cca2476e174ea97
+2026-01-15 02:20:17 INFO whatsapp_manager ADD done s_20260114181918214199 {'success': True, 'profile_path': 'E:\\project\\WhatsAppManager\\accounts\\acc_b76e5a9bfec24ee19cca2476e174ea97', 'account_id': 'acc_a7db7af415be', 'phone': None}
+2026-01-15 02:20:57 INFO whatsapp_manager log_message account=acc_a7db7af415be contact_jid=转2926 result=sent
+2026-01-15 02:20:58 INFO whatsapp_manager SEND done bulk_20260114182045771019_r1_a1 account=acc_a7db7af415be target={'name': '转2926', 'jid': '转2926'}
+2026-01-15 02:21:21 INFO whatsapp_manager log_message account=acc_841f4e0adfa8 contact_jid=杰8123转 result=sent
+2026-01-15 02:21:21 INFO whatsapp_manager SEND done bulk_20260114182045771019_r1_a2 account=acc_841f4e0adfa8 target={'name': '杰8123转', 'jid': '杰8123转'}
+2026-01-15 02:21:43 INFO whatsapp_manager log_message account=acc_15908f8300cc contact_jid=+852 9582 3015 result=sent
+2026-01-15 02:21:43 INFO whatsapp_manager SEND done bulk_20260114182045771019_r1_a3 account=acc_15908f8300cc target={'name': '+852 9582 3015', 'jid': '+852 9582 3015'}
+2026-01-15 02:22:32 INFO whatsapp_manager Initialized database at E:\project\WhatsAppManager\data\bot.db
+2026-01-15 02:22:32 INFO whatsapp_manager Pruning missing profile for account=acc_a7db7af415be path=E:\project\WhatsAppManager\accounts\acc_b76e5a9bfec24ee19cca2476e174ea97
+2026-01-15 02:22:32 INFO whatsapp_manager delete_account acc_a7db7af415be remove_messages=False
+2026-01-15 02:22:32 INFO whatsapp_manager Pruning missing profile for account=acc_841f4e0adfa8 path=E:\project\WhatsAppManager\accounts\acc_b027083f7d824f71956bb750983077d9
+2026-01-15 02:22:32 INFO whatsapp_manager delete_account acc_841f4e0adfa8 remove_messages=False
+2026-01-15 02:22:32 INFO whatsapp_manager Pruning missing profile for account=acc_15908f8300cc path=E:\project\WhatsAppManager\accounts\acc_c5521532bfe443e0b3999894cdfbf611
+2026-01-15 02:22:32 INFO whatsapp_manager delete_account acc_15908f8300cc remove_messages=False
+2026-01-15 02:22:32 INFO whatsapp_manager Pruned 3 missing account(s): ['acc_a7db7af415be', 'acc_841f4e0adfa8', 'acc_15908f8300cc']

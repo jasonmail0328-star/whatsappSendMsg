@@ -11,7 +11,7 @@ SEND_TASKS: Dict[str, Dict] = {}
 BULK_TASKS: Dict[str, Dict] = {}
 BULK_CANCELS: Dict[str, asyncio.Event] = {}
 
-# Global concurrency semaphore (fallback default 2)
+# Global concurrency semaphore
 _send_semaphore = asyncio.Semaphore(int(getattr(config, "MAX_CONCURRENT_SENDS", 2)))
 
 def make_status_struct(status: str, result: dict = None, error: str = None, trace: str = None) -> Dict:

@@ -48,7 +48,7 @@ async def detect_account_info_with_retries(page: Page, retries: int = None, dela
         except Exception:
             pass
 
-        # fallback DOM scan
+        # DOM fallback
         try:
             try:
                 await page.click("header div[role='button']", timeout=1500)
@@ -102,7 +102,7 @@ async def add_account_task_async(session_id: str, profile_name: str) -> Dict:
         try:
             await page.goto("https://web.whatsapp.com", wait_until="networkidle", timeout=int(getattr(config, "LOGIN_TIMEOUT", 180)) * 1000)
         except Exception as e:
-            debug_dir = Path(config.LOGS_DIR or "logs") / "add" / session_id
+            debug_dir = Path(getattr(config, "LOGS_DIR", "logs")) / "add" / session_id
             debug_dir.mkdir(parents=True, exist_ok=True)
             try:
                 await page.screenshot(path=str(debug_dir / "goto_failed.png"), full_page=True)
@@ -121,7 +121,6 @@ async def add_account_task_async(session_id: str, profile_name: str) -> Dict:
                     await pw.stop()
                 except Exception:
                     pass
-            # cleanup empty profile dir if nothing useful was written
             try:
                 p = Path(profile_abs)
                 if p.exists() and not any(p.iterdir()):
@@ -161,7 +160,6 @@ async def add_account_task_async(session_id: str, profile_name: str) -> Dict:
                     await pw.stop()
                 except Exception:
                     pass
-            # cleanup empty profile dir if nothing useful written
             try:
                 p = Path(profile_abs)
                 if p.exists() and not any(p.iterdir()):
@@ -213,7 +211,6 @@ async def add_account_task_async(session_id: str, profile_name: str) -> Dict:
                 await pw.stop()
             except Exception:
                 pass
-        # cleanup empty profile dir if present
         try:
             p = Path(profile_abs)
             if p.exists() and not any(p.iterdir()):

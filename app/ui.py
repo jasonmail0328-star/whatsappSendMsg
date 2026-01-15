@@ -1,4 +1,6 @@
 # app/ui.py
+# Render main HTML page. Use placeholder replacement to avoid Python f-string parsing JS braces.
+
 from html import escape
 
 def _render_accounts_table(rows):
@@ -76,11 +78,17 @@ def render_main_page(rows):
   </div>
 
   <div class="control-row">
-    <label>发送总�� / 轮数（当未勾选“每个账号各发送一条”时，count 表示轮数，每轮所有账号各发一条）: 
+    <label>发送总数 / 轮数（当未勾选“每个账号各发送一条”时，count 表示轮数，每轮所有账号各发一条）: 
       <input type="number" id="bulk_count" value="1" min="0" style="width:80px;">
     </label>
     &nbsp;&nbsp;
     <label><input type="checkbox" id="per_account"> 每个账号各发送一条（忽略 count）</label>
+  </div>
+
+  <div class="control-row">
+    <label>账号间延迟（秒）: <input type="number" id="account_interval" step="0.1" value="1" style="width:80px;"></label>
+    &nbsp;&nbsp;
+    <label>轮间延迟（秒）: <input type="number" id="round_interval" step="0.1" value="5" style="width:80px;"></label>
   </div>
 
   <div id="bulk_status_box">
@@ -117,7 +125,8 @@ def render_main_page(rows):
     send_status: (sid) => '/send_status/' + encodeURIComponent(sid),
     bulk_send: '/bulk_send',
     bulk_status: (sid) => '/bulk_status/' + encodeURIComponent(sid),
-    bulk_cancel: '/bulk_cancel'
+    bulk_cancel: '/bulk_cancel',
+    delete_account: '/delete_account'
   };
 
   const btnAdd = document.getElementById('btn-add');
@@ -198,12 +207,14 @@ def render_main_page(rows):
       const per_account = document.getElementById('per_account').checked;
       const message = document.getElementById('message_text').value;
       const dry = document.getElementById('dry_run').checked;
+      const account_interval = parseFloat(document.getElementById('account_interval').value || '1');
+      const round_interval = parseFloat(document.getElementById('round_interval').value || '5');
       if (!message || !message.trim()) { return alert('请输入要发送的消息'); }
       btn.disabled = true;
       try {
         const resp = await ajaxJson(API.bulk_send, { method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ count: count, per_account: per_account, message: message, dry_run: dry })
+          body: JSON.stringify({ count: count, per_account: per_account, message: message, dry_run: dry, account_delay: account_interval, round_delay: round_interval })
         });
         if (resp && resp.session_id) {
           document.getElementById('bulk_status_box').style.display = 'block';
@@ -276,20 +287,12 @@ def render_main_page(rows):
         const remove_profile = remove_profile_checkbox ? remove_profile_checkbox.checked : false;
         const remove_messages = remove_messages_checkbox ? remove_messages_checkbox.checked : false;
         try {
-          if (window.fetch) {
-            try {
-              const resp = await fetch('/delete_account', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ account_id: acc, remove_profile: remove_profile, remove_messages: remove_messages })});
-              if (resp.ok) {
-                location.reload();
-              } else {
-                const txt = await resp.text().catch(()=>'');
-                alert('删除失败: ' + (txt || resp.statusText));
-              }
-            } catch(e) {
-              alert('删除请求失败: ' + e);
-            }
+          const resp = await fetch(API.delete_account, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ account_id: acc, remove_profile: remove_profile, remove_messages: remove_messages })});
+          if (resp.ok) {
+            location.reload();
           } else {
-            alert('删除功能不支持');
+            const txt = await resp.text().catch(()=>'');
+            alert('删除失败: ' + (txt || resp.statusText));
           }
         } catch(e) {
           console.error('delete failed', e);
@@ -305,5 +308,4 @@ def render_main_page(rows):
 </body>
 </html>
 """
-    html = html_template.replace("__ACCOUNTS_TABLE__", accounts_table)
-    return html
+    return html_template.replace("__ACCOUNTS_TABLE__", accounts_table)
